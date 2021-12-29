@@ -1,0 +1,25 @@
+{
+  "name": "updater-service",
+  "version": "1.0.0",
+  "description": "updater service anconprotocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anconprotocol/updater-service.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anconprotocol/updater-service/issues"
+  },
+  "homepage": "https://github.com/anconprotocol/updater-service#readme",
+  "dependencies": {
+    "@nestjs/schedule": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/cron": "^1.7.3"
+  }
+}
