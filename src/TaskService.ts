@@ -31,14 +31,12 @@ export class TasksService {
         'https://data-seed-prebsc-1-s2.binance.org:8545/',
       ),
     );
-    web3.eth.accounts.wallet.add(conf.get('PKEY'));
-    const provider = new ethers.providers.Web3Provider(
-      web3.currentProvider as any,
-    );
-
+    const provider = new ethers.providers.JsonRpcProvider(conf.get('PKEY'));
+    const signer = ethers.Wallet.fromMnemonic(conf.get('PKEY'));
+    signer.connect(provider);
     const contract2 = AnconProtocol__factory.connect(
       conf.get('CONTRACT_ADDRESS'),
-      provider.getSigner(0),
+      provider,
     );
 
     const relayHash = await contract2.relayNetworkHash();
@@ -56,7 +54,8 @@ const proofCombined = [
   {
     exist: {
       valid: true,
-      key: 'L2FuY29ucHJvdG9jb2wvZTA1NDZjMDZlNDZlYWIzNDcyMmVhMTNjNTAyNGNiMDBmYjEzNmVmZDg3OGY0NThiNTViMDQ3YzhkOGU4Y2JiNi91c2VyL2JhZ3VxZWVyYWVocGRhN3pwcmJ1bXhoZzVncWlmbHkzYm1kbmFlb2NxbzRmbHZub2ZzaXB0ZmVoa3F5d3E=',
+      key:
+        'L2FuY29ucHJvdG9jb2wvZTA1NDZjMDZlNDZlYWIzNDcyMmVhMTNjNTAyNGNiMDBmYjEzNmVmZDg3OGY0NThiNTViMDQ3YzhkOGU4Y2JiNi91c2VyL2JhZ3VxZWVyYWVocGRhN3pwcmJ1bXhoZzVncWlmbHkzYm1kbmFlb2NxbzRmbHZub2ZzaXB0ZmVoa3F5d3E=',
       value: 'ZGlkOndlYjppcGZzOnVzZXI6dGVzdA==',
       leaf: {
         valid: true,
