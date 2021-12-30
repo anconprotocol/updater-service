@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
 import { AnconProtocol__factory } from './types/ethers-contracts/factories/AnconProtocol__factory';
-import { ethers } from 'ethers';
+import { ethers, providers } from 'ethers';
 import Web3 from 'web3';
 import { base64, hexlify } from 'ethers/lib/utils';
 
@@ -18,7 +18,7 @@ export class TasksService {
     console.log('init task serv');
     this.logger.debug('Called every 30 seconds');
 
-    const ipfsUrl = 'https://api.ancon.did.pa/';
+    const ipfsUrl = conf.get('ANCON_URL');
 
     let ipfsRes: any;
     axios.get(ipfsUrl + 'v0/proofs/lasthash').then(function (response) {
@@ -26,77 +26,29 @@ export class TasksService {
       // handle success
       console.log(response.data);
     });
-    const web3 = new Web3(
-      new Web3.providers.HttpProvider(
-        'https://data-seed-prebsc-1-s2.binance.org:8545/',
-      ),
-    );
-    const provider = new ethers.providers.JsonRpcProvider(conf.get('PKEY'));
-    const signer = ethers.Wallet.fromMnemonic(conf.get('PKEY'));
+    const provider = new ethers.providers.JsonRpcProvider(conf.get('ROPSTEN'));
+    const signer = ethers.Wallet.fromMnemonic(conf.get('MNEMONIC'));
+
     signer.connect(provider);
-    const contract2 = AnconProtocol__factory.connect(
+    const f = new AnconProtocol__factory(signer.connect(provider));
+    const contract = AnconProtocol__factory.connect(
       conf.get('CONTRACT_ADDRESS'),
       provider,
     );
+    const contract2 = f.attach(conf.get('CONTRACT_ADDRESS'));
 
-    const relayHash = await contract2.relayNetworkHash();
+    const relayHash = await contract.getProtocolHeader({
+      from: '0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6',
+    });
 
-    if (relayHash !== ipfsRes.data.lastHash.hash) {
-      await contract2.updateProtocolHeader(
-        base64.decode(ipfsRes.data.lastHash.hash),
-      );
+    const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
+    if (relayHash !== h) {
+      const tx = await contract2.updateProtocolHeader(h);
+      console.log('header updated successfully ' + tx.hash);
     }
     // let resA = toABIproofs();
   }
 }
-
-const proofCombined = [
-  {
-    exist: {
-      valid: true,
-      key:
-        'L2FuY29ucHJvdG9jb2wvZTA1NDZjMDZlNDZlYWIzNDcyMmVhMTNjNTAyNGNiMDBmYjEzNmVmZDg3OGY0NThiNTViMDQ3YzhkOGU4Y2JiNi91c2VyL2JhZ3VxZWVyYWVocGRhN3pwcmJ1bXhoZzVncWlmbHkzYm1kbmFlb2NxbzRmbHZub2ZzaXB0ZmVoa3F5d3E=',
-      value: 'ZGlkOndlYjppcGZzOnVzZXI6dGVzdA==',
-      leaf: {
-        valid: true,
-        hash: 1,
-        length: 1,
-        prefix: 'AAIi',
-        prehash_value: 1,
-      },
-      path: [
-        {
-          valid: true,
-          hash: 1,
-          prefix: 'AgQiIA==',
-          suffix: 'IEga3tvbzXYCsg0xSYPX36OPlz1bwOPxMp239NZ9XwG+',
-        },
-        {
-          valid: true,
-          hash: 1,
-          prefix: 'BAgiIKLI0YDL04HqPwDpHF8ht5pGCiq+Uw/0DTzSMDp7pE6mIA==',
-        },
-        {
-          valid: true,
-          hash: 1,
-          prefix: 'BgwiIADQ5R72VKesArREiAa1kDeAFiOgt9tZ+32NLHPOPjP9IA==',
-        },
-        {
-          valid: true,
-          hash: 1,
-          prefix: 'CBIiIA==',
-          suffix: 'IPhUy0NkQUD/fk42UPtKzT0QWd1NDgJshHnLRSm3j7XQ',
-        },
-        {
-          valid: true,
-          hash: 1,
-          prefix: 'CiAiIA==',
-          suffix: 'IMo1qcvqM7Duwq5Ac3wtuoTitJjOTDVrB92+pkPPAlzW',
-        },
-      ],
-    },
-  },
-];
 
 // function toABIproofs() {
 //   const z: any = { ...proofCombined[0].exist };
