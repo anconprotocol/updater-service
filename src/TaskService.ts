@@ -12,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron(CronExpression.EVERY_10_SECONDS) //10 secs for testing, 5 min for productions
+  @Cron(CronExpression.EVERY_5_MINUTES) //10 secs for testing, 5 min for productions
   async handleCron() {
     const conf = new ConfigService();
     console.log('init task serv');
@@ -26,7 +26,7 @@ export class TasksService {
       // handle success
       console.log(response.data);
     });
-    const provider = new ethers.providers.JsonRpcProvider(conf.get('ROPSTEN'));
+    const provider = new ethers.providers.JsonRpcProvider(conf.get('CHAIN'));
     const signer = ethers.Wallet.fromMnemonic(conf.get('MNEMONIC'));
 
     signer.connect(provider);
@@ -38,7 +38,7 @@ export class TasksService {
     const contract2 = f.attach(conf.get('CONTRACT_ADDRESS'));
 
     const relayHash = await contract.getProtocolHeader({
-      from: '0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6',
+      from: conf.get('RELAYER_ADDRESS'),
     });
 
     const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
