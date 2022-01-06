@@ -12,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron(CronExpression.EVERY_5_MINUTES) //10 secs for testing, 5 min for productions
+  @Cron(CronExpression.EVERY_10_SECONDS) //10 secs for testing, 5 min for productions
   async handleCron() {
     const conf = new ConfigService();
     console.log('init task serv');
