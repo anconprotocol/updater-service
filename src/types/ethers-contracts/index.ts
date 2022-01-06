@@ -19,6 +19,11 @@ export type { ERC721URIStorage } from "./ERC721URIStorage";
 export type { IAccessControl } from "./IAccessControl";
 export type { IAccessControlEnumerable } from "./IAccessControlEnumerable";
 export type { IAnconProtocol } from "./IAnconProtocol";
+<<<<<<< HEAD
+=======
+export type { IClaimsVerifier } from "./IClaimsVerifier";
+export type { ICredentialRegistry } from "./ICredentialRegistry";
+>>>>>>> fix
 export type { ICS23 } from "./ICS23";
 export type { ICS23Verifier } from "./ICS23Verifier";
 export type { IERC165 } from "./IERC165";
@@ -52,6 +57,11 @@ export { ERC721URIStorage__factory } from "./factories/ERC721URIStorage__factory
 export { IAccessControl__factory } from "./factories/IAccessControl__factory";
 export { IAccessControlEnumerable__factory } from "./factories/IAccessControlEnumerable__factory";
 export { IAnconProtocol__factory } from "./factories/IAnconProtocol__factory";
+<<<<<<< HEAD
+=======
+export { IClaimsVerifier__factory } from "./factories/IClaimsVerifier__factory";
+export { ICredentialRegistry__factory } from "./factories/ICredentialRegistry__factory";
+>>>>>>> fix
 export { ICS23__factory } from "./factories/ICS23__factory";
 export { ICS23Verifier__factory } from "./factories/ICS23Verifier__factory";
 export { IERC165__factory } from "./factories/IERC165__factory";

@@ -113,7 +113,11 @@ export interface XDVNFTInterface extends utils.Interface {
     "transferURI(address,uint256)": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "transferMetadataOwnership(string,address,uint256)": FunctionFragment;
+<<<<<<< HEAD
     "mintWithProof(address,string,bytes)": FunctionFragment;
+=======
+    "mintWithProof(bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
+>>>>>>> fix
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "withdrawBalance(address)": FunctionFragment;
@@ -212,6 +216,7 @@ export interface XDVNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "mint",
     values: [string, BigNumberish]
+<<<<<<< HEAD
   ): string;
   encodeFunctionData(
     functionFragment: "transferMetadataOwnership",
@@ -220,6 +225,16 @@ export interface XDVNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "mintWithProof",
     values: [string, string, BytesLike]
+=======
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferMetadataOwnership",
+    values: [string, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mintWithProof",
+    values: [BytesLike, BytesLike, ExistenceProofStruct, ExistenceProofStruct]
+>>>>>>> fix
   ): string;
   encodeFunctionData(
     functionFragment: "onERC721Received",
@@ -645,6 +660,7 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+<<<<<<< HEAD
     /**
      * Mints a XDV Data Token
      */
@@ -652,6 +668,13 @@ export interface XDVNFT extends BaseContract {
       user: string,
       uri: string,
       proof: BytesLike,
+=======
+    mintWithProof(
+      key: BytesLike,
+      packet: BytesLike,
+      userProof: ExistenceProofStruct,
+      proof: ExistenceProofStruct,
+>>>>>>> fix
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -878,6 +901,7 @@ export interface XDVNFT extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+<<<<<<< HEAD
   /**
    * Mints a XDV Data Token
    */
@@ -885,6 +909,13 @@ export interface XDVNFT extends BaseContract {
     user: string,
     uri: string,
     proof: BytesLike,
+=======
+  mintWithProof(
+    key: BytesLike,
+    packet: BytesLike,
+    userProof: ExistenceProofStruct,
+    proof: ExistenceProofStruct,
+>>>>>>> fix
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1097,6 +1128,7 @@ export interface XDVNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+<<<<<<< HEAD
     /**
      * Mints a XDV Data Token
      */
@@ -1104,6 +1136,13 @@ export interface XDVNFT extends BaseContract {
       user: string,
       uri: string,
       proof: BytesLike,
+=======
+    mintWithProof(
+      key: BytesLike,
+      packet: BytesLike,
+      userProof: ExistenceProofStruct,
+      proof: ExistenceProofStruct,
+>>>>>>> fix
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1407,6 +1446,7 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+<<<<<<< HEAD
     /**
      * Mints a XDV Data Token
      */
@@ -1414,6 +1454,13 @@ export interface XDVNFT extends BaseContract {
       user: string,
       uri: string,
       proof: BytesLike,
+=======
+    mintWithProof(
+      key: BytesLike,
+      packet: BytesLike,
+      userProof: ExistenceProofStruct,
+      proof: ExistenceProofStruct,
+>>>>>>> fix
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1653,6 +1700,7 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+<<<<<<< HEAD
     /**
      * Mints a XDV Data Token
      */
@@ -1660,6 +1708,13 @@ export interface XDVNFT extends BaseContract {
       user: string,
       uri: string,
       proof: BytesLike,
+=======
+    mintWithProof(
+      key: BytesLike,
+      packet: BytesLike,
+      userProof: ExistenceProofStruct,
+      proof: ExistenceProofStruct,
+>>>>>>> fix
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
