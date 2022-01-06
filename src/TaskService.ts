@@ -26,7 +26,7 @@ export class TasksService {
       // handle success
       console.log(response.data);
     });
-    const provider = new ethers.providers.JsonRpcProvider(conf.get('ROPSTEN'));
+    const provider = new ethers.providers.JsonRpcProvider(conf.get('CHAIN'));
     const signer = ethers.Wallet.fromMnemonic(conf.get('MNEMONIC'));
 
     signer.connect(provider);
