@@ -220,8 +220,6 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
-<<<<<<< HEAD
-=======
   {
     inputs: [
       {
@@ -332,7 +330,6 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
->>>>>>> fix
 ];
 
 export class IAnconProtocol__factory {

@@ -9,7 +9,6 @@ import {
   CallOverrides,
   ContractTransaction,
   Overrides,
-  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -101,23 +100,17 @@ export interface XDVNFTInterface extends utils.Interface {
     "setSigner(address)": FunctionFragment;
     "setUrl(string)": FunctionFragment;
     "stablecoin()": FunctionFragment;
-    "submitPacketWithProof(bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "url()": FunctionFragment;
-    "verifyProof((bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
     "setServiceFeeForPaymentAddress(uint256)": FunctionFragment;
     "setServiceFeeForContract(uint256)": FunctionFragment;
     "transferURI(address,uint256)": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "transferMetadataOwnership(string,address,uint256)": FunctionFragment;
-<<<<<<< HEAD
-    "mintWithProof(address,string,bytes)": FunctionFragment;
-=======
     "mintWithProof(bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
->>>>>>> fix
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "withdrawBalance(address)": FunctionFragment;
@@ -180,10 +173,6 @@ export interface XDVNFTInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "submitPacketWithProof",
-    values: [BytesLike, BytesLike, ExistenceProofStruct]
-  ): string;
-  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -197,10 +186,6 @@ export interface XDVNFTInterface extends utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(functionFragment: "url", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "verifyProof",
-    values: [ExistenceProofStruct]
-  ): string;
   encodeFunctionData(
     functionFragment: "setServiceFeeForPaymentAddress",
     values: [BigNumberish]
@@ -216,16 +201,6 @@ export interface XDVNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "mint",
     values: [string, BigNumberish]
-<<<<<<< HEAD
-  ): string;
-  encodeFunctionData(
-    functionFragment: "transferMetadataOwnership",
-    values: [string, string, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintWithProof",
-    values: [string, string, BytesLike]
-=======
   ): string;
   encodeFunctionData(
     functionFragment: "transferMetadataOwnership",
@@ -234,7 +209,6 @@ export interface XDVNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "mintWithProof",
     values: [BytesLike, BytesLike, ExistenceProofStruct, ExistenceProofStruct]
->>>>>>> fix
   ): string;
   encodeFunctionData(
     functionFragment: "onERC721Received",
@@ -297,10 +271,6 @@ export interface XDVNFTInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "setUrl", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "stablecoin", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "submitPacketWithProof",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
@@ -314,10 +284,6 @@ export interface XDVNFTInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "url", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "verifyProof",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "setServiceFeeForPaymentAddress",
     data: BytesLike
@@ -580,13 +546,6 @@ export interface XDVNFT extends BaseContract {
 
     stablecoin(overrides?: CallOverrides): Promise<[string]>;
 
-    submitPacketWithProof(
-      key: BytesLike,
-      packet: BytesLike,
-      proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     /**
      * See {IERC165-supportsInterface}.
      */
@@ -619,11 +578,6 @@ export interface XDVNFT extends BaseContract {
     ): Promise<ContractTransaction>;
 
     url(overrides?: CallOverrides): Promise<[string]>;
-
-    verifyProof(
-      exProof: ExistenceProofStruct,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
 
     setServiceFeeForPaymentAddress(
       _fee: BigNumberish,
@@ -660,21 +614,11 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-<<<<<<< HEAD
-    /**
-     * Mints a XDV Data Token
-     */
-    mintWithProof(
-      user: string,
-      uri: string,
-      proof: BytesLike,
-=======
     mintWithProof(
       key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
       proof: ExistenceProofStruct,
->>>>>>> fix
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -821,13 +765,6 @@ export interface XDVNFT extends BaseContract {
 
   stablecoin(overrides?: CallOverrides): Promise<string>;
 
-  submitPacketWithProof(
-    key: BytesLike,
-    packet: BytesLike,
-    proof: ExistenceProofStruct,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   /**
    * See {IERC165-supportsInterface}.
    */
@@ -860,11 +797,6 @@ export interface XDVNFT extends BaseContract {
   ): Promise<ContractTransaction>;
 
   url(overrides?: CallOverrides): Promise<string>;
-
-  verifyProof(
-    exProof: ExistenceProofStruct,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
 
   setServiceFeeForPaymentAddress(
     _fee: BigNumberish,
@@ -901,21 +833,11 @@ export interface XDVNFT extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-<<<<<<< HEAD
-  /**
-   * Mints a XDV Data Token
-   */
-  mintWithProof(
-    user: string,
-    uri: string,
-    proof: BytesLike,
-=======
   mintWithProof(
     key: BytesLike,
     packet: BytesLike,
     userProof: ExistenceProofStruct,
     proof: ExistenceProofStruct,
->>>>>>> fix
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -1048,13 +970,6 @@ export interface XDVNFT extends BaseContract {
 
     stablecoin(overrides?: CallOverrides): Promise<string>;
 
-    submitPacketWithProof(
-      key: BytesLike,
-      packet: BytesLike,
-      proof: ExistenceProofStruct,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
     /**
      * See {IERC165-supportsInterface}.
      */
@@ -1087,11 +1002,6 @@ export interface XDVNFT extends BaseContract {
     ): Promise<void>;
 
     url(overrides?: CallOverrides): Promise<string>;
-
-    verifyProof(
-      exProof: ExistenceProofStruct,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
 
     setServiceFeeForPaymentAddress(
       _fee: BigNumberish,
@@ -1128,21 +1038,11 @@ export interface XDVNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-<<<<<<< HEAD
-    /**
-     * Mints a XDV Data Token
-     */
-    mintWithProof(
-      user: string,
-      uri: string,
-      proof: BytesLike,
-=======
     mintWithProof(
       key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
       proof: ExistenceProofStruct,
->>>>>>> fix
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1366,13 +1266,6 @@ export interface XDVNFT extends BaseContract {
 
     stablecoin(overrides?: CallOverrides): Promise<BigNumber>;
 
-    submitPacketWithProof(
-      key: BytesLike,
-      packet: BytesLike,
-      proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     /**
      * See {IERC165-supportsInterface}.
      */
@@ -1405,11 +1298,6 @@ export interface XDVNFT extends BaseContract {
     ): Promise<BigNumber>;
 
     url(overrides?: CallOverrides): Promise<BigNumber>;
-
-    verifyProof(
-      exProof: ExistenceProofStruct,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     setServiceFeeForPaymentAddress(
       _fee: BigNumberish,
@@ -1446,21 +1334,11 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-<<<<<<< HEAD
-    /**
-     * Mints a XDV Data Token
-     */
-    mintWithProof(
-      user: string,
-      uri: string,
-      proof: BytesLike,
-=======
     mintWithProof(
       key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
       proof: ExistenceProofStruct,
->>>>>>> fix
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1620,13 +1498,6 @@ export interface XDVNFT extends BaseContract {
 
     stablecoin(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    submitPacketWithProof(
-      key: BytesLike,
-      packet: BytesLike,
-      proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     /**
      * See {IERC165-supportsInterface}.
      */
@@ -1659,11 +1530,6 @@ export interface XDVNFT extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     url(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    verifyProof(
-      exProof: ExistenceProofStruct,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     setServiceFeeForPaymentAddress(
       _fee: BigNumberish,
@@ -1700,21 +1566,11 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-<<<<<<< HEAD
-    /**
-     * Mints a XDV Data Token
-     */
-    mintWithProof(
-      user: string,
-      uri: string,
-      proof: BytesLike,
-=======
     mintWithProof(
       key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
       proof: ExistenceProofStruct,
->>>>>>> fix
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
