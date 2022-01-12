@@ -12,11 +12,10 @@ import { ConfigService } from '@nestjs/config';
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron(CronExpression.EVERY_30_SECONDS) //10 secs for testing, 5 min for productions
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleCron() {
     const conf = new ConfigService();
-    console.log('init task serv');
-    this.logger.debug('Called every 30 seconds');
+    this.logger.debug('Called every 60 seconds');
 
     const ipfsUrl = conf.get('ANCON_URL');
 
@@ -26,27 +25,32 @@ export class TasksService {
       // handle success
       console.log(response.data);
     });
-    const provider = new ethers.providers.JsonRpcProvider(conf.get('CHAIN'));
-    const signer = ethers.Wallet.fromMnemonic(conf.get('MNEMONIC'));
 
-    signer.connect(provider);
-    const f = new AnconProtocol__factory(signer.connect(provider));
-    const contract = AnconProtocol__factory.connect(
-      conf.get('CONTRACT_ADDRESS'),
-      provider,
-    );
-    const contract2 = f.attach(conf.get('CONTRACT_ADDRESS'));
+    const activeRelayers = conf.get('RELAYERS_ACTIVE').split(',');
 
-    const relayHash = await contract.getProtocolHeader({
-      from: conf.get('RELAYER_ADDRESS'),
-    });
+    for (const relayerName of activeRelayers) {
+      const url = conf.get(relayerName);
+      const provider = new ethers.providers.JsonRpcProvider(url);
+      const mnemonic = conf.get(`${relayerName}_MNEMONIC`);
+      const signer = ethers.Wallet.fromMnemonic(mnemonic);
 
-    const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
-    if (relayHash !== h) {
-      const tx = await contract2.updateProtocolHeader(h);
-      console.log('header updated successfully ' + tx.hash);
+      const f = new AnconProtocol__factory(signer.connect(provider));
+      const contract = AnconProtocol__factory.connect(
+        conf.get(`${relayerName}_CONTRACT_ADDRESS`),
+        provider,
+      );
+      const contract2 = f.attach(conf.get(`${relayerName}_CONTRACT_ADDRESS`));
+
+      const relayHash = await contract.getProtocolHeader({
+        from: conf.get(`${relayerName}_RELAYER_ADDRESS`),
+      });
+
+      const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
+      if (relayHash !== h) {
+        const tx = await contract2.updateProtocolHeader(h);
+        console.log(`${relayerName} header updated successfully ${tx.hash}`);
+      }
     }
-    // let resA = toABIproofs();
   }
 }
 
