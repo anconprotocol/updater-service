@@ -4,7 +4,14 @@ import axios from 'axios';
 import { AnconProtocol__factory } from './types/ethers-contracts/factories/AnconProtocol__factory';
 import { ethers, providers } from 'ethers';
 import Web3 from 'web3';
-import { base64, hexlify } from 'ethers/lib/utils';
+import {
+  arrayify,
+  base64,
+  formatBytes32String,
+  hexlify,
+  keccak256,
+  toUtf8Bytes,
+} from 'ethers/lib/utils';
 
 import { ConfigService } from '@nestjs/config';
 
@@ -27,12 +34,13 @@ export class TasksService {
     });
 
     const activeRelayers = conf.get('RELAYERS_ACTIVE').split(',');
+    const pk = conf.get(`DAG_STORE_KEY`);
+    const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
 
     for (const relayerName of activeRelayers) {
       const url = conf.get(relayerName);
       const provider = new ethers.providers.JsonRpcProvider(url);
-      const mnemonic = conf.get(`${relayerName}_MNEMONIC`);
-      const signer = ethers.Wallet.fromMnemonic(mnemonic);
+      const signer = new ethers.Wallet(Web3.utils.hexToBytes(pk));
 
       const f = new AnconProtocol__factory(signer.connect(provider));
       const contract = AnconProtocol__factory.connect(
@@ -41,13 +49,22 @@ export class TasksService {
       );
       const contract2 = f.attach(conf.get(`${relayerName}_CONTRACT_ADDRESS`));
 
-      const relayHash = await contract.getProtocolHeader({
-        from: conf.get(`${relayerName}_RELAYER_ADDRESS`),
+      const relayHeader = await contract.getProtocolHeader(moniker, {
+        from: signer.address,
       });
 
       const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
-      if (relayHash !== h) {
-        const tx = await contract2.updateProtocolHeader(h);
+      const sig = await signer.signMessage(moniker);
+      const { v, r, s } = ethers.utils.splitSignature(sig);
+      if (relayHeader.roothash !== h) {
+        const tx = await contract2.updateRelayerHeader(
+          moniker,
+          h,
+          ipfsRes.data.lastHash.version,
+          v,
+          r,
+          s,
+        );
         console.log(`${relayerName} header updated successfully ${tx.hash}`);
       }
     }
