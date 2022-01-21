@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import axios from 'axios';
 import { AnconProtocol__factory } from './types/ethers-contracts/factories/AnconProtocol__factory';
-import { ethers, providers } from 'ethers';
+import { BigNumber, ethers, providers } from 'ethers';
 import Web3 from 'web3';
 import {
   arrayify,
@@ -49,21 +49,21 @@ export class TasksService {
       );
       const contract2 = f.attach(conf.get(`${relayerName}_CONTRACT_ADDRESS`));
 
-      const relayHeader = await contract.getProtocolHeader(moniker, {
-        from: signer.address,
-      });
-
+      const relayHeader = await contract.getProtocolHeader(moniker);
       const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
-      const sig = await signer.signMessage(moniker);
-      const { v, r, s } = ethers.utils.splitSignature(sig);
-      if (relayHeader.roothash !== h) {
+      // console.log(
+      //   await signer.getAddress(),
+      //   relayHeader,
+      //   h,
+      //   parseInt(ipfsRes.data.lastHash.version).toString(),
+      // );
+
+      if (relayHeader !== h) {
         const tx = await contract2.updateRelayerHeader(
           moniker,
           h,
-          ipfsRes.data.lastHash.version,
-          v,
-          r,
-          s,
+          parseInt(ipfsRes.data.lastHash.version).toString(),
+          // { gasLimit: 31000, gasPrice: 30000000000 },
         );
         console.log(`${relayerName} header updated successfully ${tx.hash}`);
       }
