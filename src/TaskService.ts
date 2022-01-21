@@ -51,12 +51,12 @@ export class TasksService {
 
       const relayHeader = await contract.getProtocolHeader(moniker);
       const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
-      // console.log(
-      //   await signer.getAddress(),
-      //   relayHeader,
-      //   h,
-      //   parseInt(ipfsRes.data.lastHash.version).toString(),
-      // );
+      console.log(
+        await signer.getAddress(),
+        relayHeader,
+        h,
+        parseInt(ipfsRes.data.lastHash.version).toString(),
+      );
 
       if (relayHeader !== h) {
         const tx = await contract2.updateRelayerHeader(
