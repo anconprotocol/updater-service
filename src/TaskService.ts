@@ -36,7 +36,8 @@ export class TasksService {
     const activeRelayers = conf.get('RELAYERS_ACTIVE').split(',');
     const pk = conf.get(`DAG_STORE_KEY`);
     const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
-
+    // Update relayer header will charge the fee configured in anconprotocol stablecoin.
+    // Please approve using console
     for (const relayerName of activeRelayers) {
       const url = conf.get(relayerName);
       const provider = new ethers.providers.JsonRpcProvider(url);
@@ -59,11 +60,17 @@ export class TasksService {
       );
 
       if (relayHeader !== h) {
+        const gasLimit = await contract2.estimateGas.updateRelayerHeader(
+          moniker,
+          h,
+          parseInt(ipfsRes.data.lastHash.version).toString(),
+        );
+
         const tx = await contract2.updateRelayerHeader(
           moniker,
           h,
           parseInt(ipfsRes.data.lastHash.version).toString(),
-          // { gasLimit: 31000, gasPrice: 30000000000 },
+          { gasLimit: gasLimit }, //gasPrice: 30000000000 },
         );
         console.log(`${relayerName} header updated successfully ${tx.hash}`);
       }
