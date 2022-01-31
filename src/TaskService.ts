@@ -65,7 +65,11 @@ export class TasksService {
           h,
           parseInt(ipfsRes.data.lastHash.version).toString(),
         );
-        const rate = gasLimit.toNumber() * 1.2;
+
+        let rate = gasLimit.toNumber() * 1.2;
+
+        rate = Math.floor(rate);
+
         const tx = await contract2.updateRelayerHeader(
           moniker,
           h,
