@@ -65,12 +65,12 @@ export class TasksService {
           h,
           parseInt(ipfsRes.data.lastHash.version).toString(),
         );
-
+        const rate = gasLimit.toNumber() * 1.2;
         const tx = await contract2.updateRelayerHeader(
           moniker,
           h,
           parseInt(ipfsRes.data.lastHash.version).toString(),
-          { gasLimit: gasLimit }, //gasPrice: 30000000000 },
+          { gasLimit: rate.toString() }, //gasPrice: 30000000000 },
         );
         console.log(`${relayerName} header updated successfully ${tx.hash}`);
       }
