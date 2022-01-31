@@ -112,11 +112,11 @@ export interface WXDVInterface extends utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "url()": FunctionFragment;
-    "setServiceFeeForPaymentAddress(uint256)": FunctionFragment;
-    "setServiceFeeForContract(uint256)": FunctionFragment;
+    "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
-    "mintWithProof(address,uint256,bytes32,bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
+    "submitMintWithProof(address,uint256,bytes32,bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
     "enrollNFT(address)": FunctionFragment;
+    "deactivateNFT(address)": FunctionFragment;
     "lockWithProof(address,bytes32,bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
     "releaseWithProof(address,bytes32,bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
@@ -220,19 +220,15 @@ export interface WXDVInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "url", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "setServiceFeeForPaymentAddress",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setServiceFeeForContract",
-    values: [BigNumberish]
+    functionFragment: "onERC721Received",
+    values: [string, string, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "mintWithProof",
+    functionFragment: "submitMintWithProof",
     values: [
       string,
       BigNumberish,
@@ -245,6 +241,10 @@ export interface WXDVInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "enrollNFT", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "deactivateNFT",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "lockWithProof",
     values: [
@@ -366,19 +366,19 @@ export interface WXDVInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "url", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setServiceFeeForPaymentAddress",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setServiceFeeForContract",
+    functionFragment: "onERC721Received",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "mintWithProof",
+    functionFragment: "submitMintWithProof",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "enrollNFT", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "deactivateNFT",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "lockWithProof",
     data: BytesLike
@@ -702,13 +702,14 @@ export interface WXDV extends BaseContract {
 
     url(overrides?: CallOverrides): Promise<[string]>;
 
-    setServiceFeeForPaymentAddress(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setServiceFeeForContract(
-      _fee: BigNumberish,
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -718,7 +719,7 @@ export interface WXDV extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    mintWithProof(
+    submitMintWithProof(
       sender: string,
       newItemId: BigNumberish,
       moniker: BytesLike,
@@ -733,6 +734,11 @@ export interface WXDV extends BaseContract {
     enrollNFT(
       NFTaddress: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    deactivateNFT(
+      NFTaddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     lockWithProof(
@@ -949,13 +955,14 @@ export interface WXDV extends BaseContract {
 
   url(overrides?: CallOverrides): Promise<string>;
 
-  setServiceFeeForPaymentAddress(
-    _fee: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setServiceFeeForContract(
-    _fee: BigNumberish,
+  /**
+   * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+   */
+  onERC721Received(
+    operator: string,
+    from: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -965,7 +972,7 @@ export interface WXDV extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  mintWithProof(
+  submitMintWithProof(
     sender: string,
     newItemId: BigNumberish,
     moniker: BytesLike,
@@ -980,6 +987,11 @@ export interface WXDV extends BaseContract {
   enrollNFT(
     NFTaddress: string,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  deactivateNFT(
+    NFTaddress: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   lockWithProof(
@@ -1182,15 +1194,16 @@ export interface WXDV extends BaseContract {
 
     url(overrides?: CallOverrides): Promise<string>;
 
-    setServiceFeeForPaymentAddress(
-      _fee: BigNumberish,
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
-
-    setServiceFeeForContract(
-      _fee: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
 
     mint(
       toAddress: string,
@@ -1198,7 +1211,7 @@ export interface WXDV extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
-    mintWithProof(
+    submitMintWithProof(
       sender: string,
       newItemId: BigNumberish,
       moniker: BytesLike,
@@ -1211,6 +1224,11 @@ export interface WXDV extends BaseContract {
     ): Promise<boolean>;
 
     enrollNFT(NFTaddress: string, overrides?: CallOverrides): Promise<boolean>;
+
+    deactivateNFT(
+      NFTaddress: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     lockWithProof(
       sender: string,
@@ -1519,13 +1537,14 @@ export interface WXDV extends BaseContract {
 
     url(overrides?: CallOverrides): Promise<BigNumber>;
 
-    setServiceFeeForPaymentAddress(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setServiceFeeForContract(
-      _fee: BigNumberish,
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1535,7 +1554,7 @@ export interface WXDV extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    mintWithProof(
+    submitMintWithProof(
       sender: string,
       newItemId: BigNumberish,
       moniker: BytesLike,
@@ -1550,6 +1569,11 @@ export interface WXDV extends BaseContract {
     enrollNFT(
       NFTaddress: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    deactivateNFT(
+      NFTaddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     lockWithProof(
@@ -1781,13 +1805,14 @@ export interface WXDV extends BaseContract {
 
     url(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    setServiceFeeForPaymentAddress(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setServiceFeeForContract(
-      _fee: BigNumberish,
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1797,7 +1822,7 @@ export interface WXDV extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    mintWithProof(
+    submitMintWithProof(
       sender: string,
       newItemId: BigNumberish,
       moniker: BytesLike,
@@ -1812,6 +1837,11 @@ export interface WXDV extends BaseContract {
     enrollNFT(
       NFTaddress: string,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    deactivateNFT(
+      NFTaddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     lockWithProof(

@@ -81,7 +81,7 @@ export type ExistenceProofStructOutput = [
 
 export interface XDVNFTInterface extends utils.Interface {
   functions: {
-    "WXDV()": FunctionFragment;
+    "anconprotocol()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
@@ -103,15 +103,19 @@ export interface XDVNFTInterface extends utils.Interface {
     "transferOwnership(address)": FunctionFragment;
     "url()": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
-    "mintWithProof(bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
-    "lockWithProof(bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
-    "releaseWithProof(bytes,bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),bytes32)": FunctionFragment;
+    "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
+    "mintWithProof(bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
+    "lockWithProof(bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
+    "releaseWithProof(bytes,(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),(bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]))": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "withdrawBalance(address)": FunctionFragment;
     "withdraw(address)": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "WXDV", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "anconprotocol",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [string, BigNumberish]
@@ -170,34 +174,20 @@ export interface XDVNFTInterface extends utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "onERC721Received",
+    values: [string, string, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "mintWithProof",
-    values: [
-      BytesLike,
-      BytesLike,
-      ExistenceProofStruct,
-      ExistenceProofStruct,
-      BytesLike
-    ]
+    values: [BytesLike, ExistenceProofStruct, ExistenceProofStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "lockWithProof",
-    values: [
-      BytesLike,
-      BytesLike,
-      ExistenceProofStruct,
-      ExistenceProofStruct,
-      BytesLike
-    ]
+    values: [BytesLike, ExistenceProofStruct, ExistenceProofStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "releaseWithProof",
-    values: [
-      BytesLike,
-      BytesLike,
-      ExistenceProofStruct,
-      ExistenceProofStruct,
-      BytesLike
-    ]
+    values: [BytesLike, ExistenceProofStruct, ExistenceProofStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
@@ -209,7 +199,10 @@ export interface XDVNFTInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "withdraw", values: [string]): string;
 
-  decodeFunctionResult(functionFragment: "WXDV", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "anconprotocol",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
@@ -255,6 +248,10 @@ export interface XDVNFTInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "url", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "onERC721Received",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "mintWithProof",
     data: BytesLike
@@ -370,7 +367,7 @@ export interface XDVNFT extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    WXDV(overrides?: CallOverrides): Promise<[string]>;
+    anconprotocol(overrides?: CallOverrides): Promise<[string]>;
 
     /**
      * See {IERC721-approve}.
@@ -519,30 +516,35 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     mintWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     lockWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     releaseWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -565,7 +567,7 @@ export interface XDVNFT extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  WXDV(overrides?: CallOverrides): Promise<string>;
+  anconprotocol(overrides?: CallOverrides): Promise<string>;
 
   /**
    * See {IERC721-approve}.
@@ -711,30 +713,35 @@ export interface XDVNFT extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  /**
+   * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+   */
+  onERC721Received(
+    operator: string,
+    from: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   mintWithProof(
-    key: BytesLike,
     packet: BytesLike,
     userProof: ExistenceProofStruct,
-    proof: ExistenceProofStruct,
-    hash: BytesLike,
+    packetProof: ExistenceProofStruct,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   lockWithProof(
-    key: BytesLike,
     packet: BytesLike,
     userProof: ExistenceProofStruct,
-    proof: ExistenceProofStruct,
-    hash: BytesLike,
+    packetProof: ExistenceProofStruct,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   releaseWithProof(
-    key: BytesLike,
     packet: BytesLike,
     userProof: ExistenceProofStruct,
-    proof: ExistenceProofStruct,
-    hash: BytesLike,
+    packetProof: ExistenceProofStruct,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -754,7 +761,7 @@ export interface XDVNFT extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    WXDV(overrides?: CallOverrides): Promise<string>;
+    anconprotocol(overrides?: CallOverrides): Promise<string>;
 
     /**
      * See {IERC721-approve}.
@@ -889,30 +896,35 @@ export interface XDVNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     mintWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     lockWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     releaseWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1000,7 +1012,7 @@ export interface XDVNFT extends BaseContract {
   };
 
   estimateGas: {
-    WXDV(overrides?: CallOverrides): Promise<BigNumber>;
+    anconprotocol(overrides?: CallOverrides): Promise<BigNumber>;
 
     /**
      * See {IERC721-approve}.
@@ -1149,30 +1161,35 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     mintWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     lockWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     releaseWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1196,7 +1213,7 @@ export interface XDVNFT extends BaseContract {
   };
 
   populateTransaction: {
-    WXDV(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    anconprotocol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     /**
      * See {IERC721-approve}.
@@ -1348,30 +1365,35 @@ export interface XDVNFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    /**
+     * Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721.onERC721Received.selector`.
+     */
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     mintWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     lockWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     releaseWithProof(
-      key: BytesLike,
       packet: BytesLike,
       userProof: ExistenceProofStruct,
-      proof: ExistenceProofStruct,
-      hash: BytesLike,
+      packetProof: ExistenceProofStruct,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

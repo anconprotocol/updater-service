@@ -125,32 +125,34 @@ export type ExistenceProofStructOutput = [
 
 export interface AnconProtocolInterface extends utils.Interface {
   functions: {
-    "ENROLL_DAG()": FunctionFragment;
-    "ENROLL_PAYMENT()": FunctionFragment;
-    "SUBMIT_PAYMENT()": FunctionFragment;
+    "INCLUDED_BLOCKS_EPOCH()": FunctionFragment;
     "accountByAddrProofs(address)": FunctionFragment;
     "accountProofs(bytes)": FunctionFragment;
-    "accountRegistrationFee()": FunctionFragment;
-    "dagRegistrationFee()": FunctionFragment;
+    "dagGraphSubscriptions(address)": FunctionFragment;
     "getIavlSpec()": FunctionFragment;
     "latestRootHashTable(bytes32)": FunctionFragment;
+    "nonce(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "proofs(bytes)": FunctionFragment;
-    "protocolFee()": FunctionFragment;
     "relayer()": FunctionFragment;
     "relayerHashTable(bytes32,uint256)": FunctionFragment;
+    "seq()": FunctionFragment;
     "stablecoin()": FunctionFragment;
+    "tiers(bytes32)": FunctionFragment;
+    "totalHeaderUpdatesByDagGraph(address)": FunctionFragment;
+    "totalSubmittedByDagGraphUser(address,address)": FunctionFragment;
     "verify((bool,bytes,bytes,(bool,uint8,uint8,uint8,uint8,bytes),(bool,uint8,bytes,bytes)[]),((bool,uint8,uint8,uint8,uint8,bytes),(uint256[],uint256,uint256,uint256,bytes,uint8),uint256,uint256),bytes,bytes,bytes)": FunctionFragment;
     "whitelistedDagGraph(bytes32)": FunctionFragment;
     "getContractIdentifier()": FunctionFragment;
-    "setWhitelistedDagGraph(bytes32,address)": FunctionFragment;
+    "verifyContractIdentifier(uint256,address,bytes32)": FunctionFragment;
+    "getNonce()": FunctionFragment;
+    "registerDagGraphTier(bytes32,address,bytes32)": FunctionFragment;
     "updateRelayerHeader(bytes32,bytes,uint256)": FunctionFragment;
     "setPaymentToken(address)": FunctionFragment;
+    "addTier(bytes32,address,uint256,uint256,uint256)": FunctionFragment;
+    "setTierSettings(bytes32,address,uint256,uint256,uint256)": FunctionFragment;
     "withdraw(address)": FunctionFragment;
     "withdrawToken(address,address)": FunctionFragment;
-    "setProtocolFee(uint256)": FunctionFragment;
-    "setAccountRegistrationFee(uint256)": FunctionFragment;
-    "setDagGraphFee(uint256)": FunctionFragment;
     "getProtocolHeader(bytes32)": FunctionFragment;
     "getProof(bytes)": FunctionFragment;
     "hasProof(bytes)": FunctionFragment;
@@ -160,15 +162,7 @@ export interface AnconProtocolInterface extends utils.Interface {
   };
 
   encodeFunctionData(
-    functionFragment: "ENROLL_DAG",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "ENROLL_PAYMENT",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "SUBMIT_PAYMENT",
+    functionFragment: "INCLUDED_BLOCKS_EPOCH",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -180,12 +174,8 @@ export interface AnconProtocolInterface extends utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "accountRegistrationFee",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "dagRegistrationFee",
-    values?: undefined
+    functionFragment: "dagGraphSubscriptions",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "getIavlSpec",
@@ -195,20 +185,27 @@ export interface AnconProtocolInterface extends utils.Interface {
     functionFragment: "latestRootHashTable",
     values: [BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "nonce", values: [string]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "proofs", values: [BytesLike]): string;
-  encodeFunctionData(
-    functionFragment: "protocolFee",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "relayer", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "relayerHashTable",
     values: [BytesLike, BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "seq", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "stablecoin",
     values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "tiers", values: [BytesLike]): string;
+  encodeFunctionData(
+    functionFragment: "totalHeaderUpdatesByDagGraph",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSubmittedByDagGraphUser",
+    values: [string, string]
   ): string;
   encodeFunctionData(
     functionFragment: "verify",
@@ -229,8 +226,13 @@ export interface AnconProtocolInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setWhitelistedDagGraph",
-    values: [BytesLike, string]
+    functionFragment: "verifyContractIdentifier",
+    values: [BigNumberish, string, BytesLike]
+  ): string;
+  encodeFunctionData(functionFragment: "getNonce", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "registerDagGraphTier",
+    values: [BytesLike, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "updateRelayerHeader",
@@ -240,22 +242,18 @@ export interface AnconProtocolInterface extends utils.Interface {
     functionFragment: "setPaymentToken",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "addTier",
+    values: [BytesLike, string, BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTierSettings",
+    values: [BytesLike, string, BigNumberish, BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "withdraw", values: [string]): string;
   encodeFunctionData(
     functionFragment: "withdrawToken",
     values: [string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setProtocolFee",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setAccountRegistrationFee",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setDagGraphFee",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getProtocolHeader",
@@ -283,13 +281,8 @@ export interface AnconProtocolInterface extends utils.Interface {
     values: [BytesLike, BytesLike, BytesLike, ExistenceProofStruct]
   ): string;
 
-  decodeFunctionResult(functionFragment: "ENROLL_DAG", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "ENROLL_PAYMENT",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "SUBMIT_PAYMENT",
+    functionFragment: "INCLUDED_BLOCKS_EPOCH",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -301,11 +294,7 @@ export interface AnconProtocolInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "accountRegistrationFee",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "dagRegistrationFee",
+    functionFragment: "dagGraphSubscriptions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -316,18 +305,25 @@ export interface AnconProtocolInterface extends utils.Interface {
     functionFragment: "latestRootHashTable",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "nonce", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "proofs", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "protocolFee",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "relayer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "relayerHashTable",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "seq", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "stablecoin", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "tiers", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "totalHeaderUpdatesByDagGraph",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSubmittedByDagGraphUser",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "whitelistedDagGraph",
@@ -338,7 +334,12 @@ export interface AnconProtocolInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setWhitelistedDagGraph",
+    functionFragment: "verifyContractIdentifier",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getNonce", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "registerDagGraphTier",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -349,21 +350,14 @@ export interface AnconProtocolInterface extends utils.Interface {
     functionFragment: "setPaymentToken",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "addTier", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setTierSettings",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "withdrawToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setProtocolFee",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setAccountRegistrationFee",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setDagGraphFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -389,7 +383,9 @@ export interface AnconProtocolInterface extends utils.Interface {
     "AccountRegistered(bool,bytes,bytes,bytes32)": EventFragment;
     "HeaderUpdated(bytes32)": EventFragment;
     "ProofPacketSubmitted(bytes,bytes,bytes32)": EventFragment;
-    "ServiceFeePaid(address,uint256)": EventFragment;
+    "ServiceFeePaid(address,bytes32,bytes32,address,uint256)": EventFragment;
+    "TierAdded(bytes32)": EventFragment;
+    "TierUpdated(bytes32,address,uint256,uint256,uint256)": EventFragment;
     "Withdrawn(address,uint256)": EventFragment;
   };
 
@@ -397,6 +393,8 @@ export interface AnconProtocolInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "HeaderUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProofPacketSubmitted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ServiceFeePaid"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TierAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TierUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawn"): EventFragment;
 }
 
@@ -421,11 +419,28 @@ export type ProofPacketSubmittedEventFilter =
   TypedEventFilter<ProofPacketSubmittedEvent>;
 
 export type ServiceFeePaidEvent = TypedEvent<
-  [string, BigNumber],
-  { from: string; fee: BigNumber }
+  [string, string, string, string, BigNumber],
+  { from: string; tier: string; moniker: string; token: string; fee: BigNumber }
 >;
 
 export type ServiceFeePaidEventFilter = TypedEventFilter<ServiceFeePaidEvent>;
+
+export type TierAddedEvent = TypedEvent<[string], { id: string }>;
+
+export type TierAddedEventFilter = TypedEventFilter<TierAddedEvent>;
+
+export type TierUpdatedEvent = TypedEvent<
+  [string, string, BigNumber, BigNumber, BigNumber],
+  {
+    id: string;
+    token: string;
+    fee: BigNumber;
+    staked: BigNumber;
+    includedBlocks: BigNumber;
+  }
+>;
+
+export type TierUpdatedEventFilter = TypedEventFilter<TierUpdatedEvent>;
 
 export type WithdrawnEvent = TypedEvent<
   [string, BigNumber],
@@ -461,11 +476,7 @@ export interface AnconProtocol extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    ENROLL_DAG(overrides?: CallOverrides): Promise<[string]>;
-
-    ENROLL_PAYMENT(overrides?: CallOverrides): Promise<[string]>;
-
-    SUBMIT_PAYMENT(overrides?: CallOverrides): Promise<[string]>;
+    INCLUDED_BLOCKS_EPOCH(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     accountByAddrProofs(
       arg0: string,
@@ -477,9 +488,30 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
-    accountRegistrationFee(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    dagRegistrationFee(overrides?: CallOverrides): Promise<[BigNumber]>;
+    dagGraphSubscriptions(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
+        token: string;
+        amount: BigNumber;
+        amountStaked: BigNumber;
+        includedBlocks: BigNumber;
+        id: string;
+        incentiveBlocksMonthly: BigNumber;
+        incentivePercentageMonthly: BigNumber;
+        includedBlocksStarted: BigNumber;
+      }
+    >;
 
     getIavlSpec(overrides?: CallOverrides): Promise<[ProofSpecStructOutput]>;
 
@@ -488,11 +520,11 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    nonce(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     proofs(arg0: BytesLike, overrides?: CallOverrides): Promise<[boolean]>;
-
-    protocolFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     relayer(overrides?: CallOverrides): Promise<[string]>;
 
@@ -502,7 +534,45 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    seq(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     stablecoin(overrides?: CallOverrides): Promise<[string]>;
+
+    tiers(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
+        token: string;
+        amount: BigNumber;
+        amountStaked: BigNumber;
+        includedBlocks: BigNumber;
+        id: string;
+        incentiveBlocksMonthly: BigNumber;
+        incentivePercentageMonthly: BigNumber;
+        includedBlocksStarted: BigNumber;
+      }
+    >;
+
+    totalHeaderUpdatesByDagGraph(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    totalSubmittedByDagGraphUser(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     verify(
       proof: ExistenceProofStruct,
@@ -520,9 +590,19 @@ export interface AnconProtocol extends BaseContract {
 
     getContractIdentifier(overrides?: CallOverrides): Promise<[string]>;
 
-    setWhitelistedDagGraph(
+    verifyContractIdentifier(
+      usernonce: BigNumberish,
+      sender: string,
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    getNonce(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    registerDagGraphTier(
       moniker: BytesLike,
       dagAddress: string,
+      tier: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -530,11 +610,29 @@ export interface AnconProtocol extends BaseContract {
       moniker: BytesLike,
       rootHash: BytesLike,
       height: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     setPaymentToken(
       tokenAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    addTier(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setTierSettings(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -546,21 +644,6 @@ export interface AnconProtocol extends BaseContract {
     withdrawToken(
       payee: string,
       erc20token: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setProtocolFee(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setAccountRegistrationFee(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setDagGraphFee(
-      _fee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -578,7 +661,7 @@ export interface AnconProtocol extends BaseContract {
       key: BytesLike,
       did: BytesLike,
       proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     submitPacketWithProof(
@@ -588,7 +671,7 @@ export interface AnconProtocol extends BaseContract {
       key: BytesLike,
       packet: BytesLike,
       proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     verifyProofWithKV(
@@ -600,19 +683,36 @@ export interface AnconProtocol extends BaseContract {
     ): Promise<[boolean]>;
   };
 
-  ENROLL_DAG(overrides?: CallOverrides): Promise<string>;
-
-  ENROLL_PAYMENT(overrides?: CallOverrides): Promise<string>;
-
-  SUBMIT_PAYMENT(overrides?: CallOverrides): Promise<string>;
+  INCLUDED_BLOCKS_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
 
   accountByAddrProofs(arg0: string, overrides?: CallOverrides): Promise<string>;
 
   accountProofs(arg0: BytesLike, overrides?: CallOverrides): Promise<string>;
 
-  accountRegistrationFee(overrides?: CallOverrides): Promise<BigNumber>;
-
-  dagRegistrationFee(overrides?: CallOverrides): Promise<BigNumber>;
+  dagGraphSubscriptions(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber
+    ] & {
+      token: string;
+      amount: BigNumber;
+      amountStaked: BigNumber;
+      includedBlocks: BigNumber;
+      id: string;
+      incentiveBlocksMonthly: BigNumber;
+      incentivePercentageMonthly: BigNumber;
+      includedBlocksStarted: BigNumber;
+    }
+  >;
 
   getIavlSpec(overrides?: CallOverrides): Promise<ProofSpecStructOutput>;
 
@@ -621,11 +721,11 @@ export interface AnconProtocol extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  nonce(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   proofs(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
-
-  protocolFee(overrides?: CallOverrides): Promise<BigNumber>;
 
   relayer(overrides?: CallOverrides): Promise<string>;
 
@@ -635,7 +735,45 @@ export interface AnconProtocol extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  seq(overrides?: CallOverrides): Promise<BigNumber>;
+
   stablecoin(overrides?: CallOverrides): Promise<string>;
+
+  tiers(
+    arg0: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<
+    [
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber
+    ] & {
+      token: string;
+      amount: BigNumber;
+      amountStaked: BigNumber;
+      includedBlocks: BigNumber;
+      id: string;
+      incentiveBlocksMonthly: BigNumber;
+      incentivePercentageMonthly: BigNumber;
+      includedBlocksStarted: BigNumber;
+    }
+  >;
+
+  totalHeaderUpdatesByDagGraph(
+    arg0: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  totalSubmittedByDagGraphUser(
+    arg0: string,
+    arg1: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   verify(
     proof: ExistenceProofStruct,
@@ -653,9 +791,19 @@ export interface AnconProtocol extends BaseContract {
 
   getContractIdentifier(overrides?: CallOverrides): Promise<string>;
 
-  setWhitelistedDagGraph(
+  verifyContractIdentifier(
+    usernonce: BigNumberish,
+    sender: string,
+    hash: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  getNonce(overrides?: CallOverrides): Promise<BigNumber>;
+
+  registerDagGraphTier(
     moniker: BytesLike,
     dagAddress: string,
+    tier: BytesLike,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -663,11 +811,29 @@ export interface AnconProtocol extends BaseContract {
     moniker: BytesLike,
     rootHash: BytesLike,
     height: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   setPaymentToken(
     tokenAddress: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  addTier(
+    id: BytesLike,
+    tokenAddress: string,
+    amount: BigNumberish,
+    amountStaked: BigNumberish,
+    includedBlocks: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setTierSettings(
+    id: BytesLike,
+    tokenAddress: string,
+    amount: BigNumberish,
+    amountStaked: BigNumberish,
+    includedBlocks: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -679,21 +845,6 @@ export interface AnconProtocol extends BaseContract {
   withdrawToken(
     payee: string,
     erc20token: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setProtocolFee(
-    _fee: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setAccountRegistrationFee(
-    _fee: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setDagGraphFee(
-    _fee: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -711,7 +862,7 @@ export interface AnconProtocol extends BaseContract {
     key: BytesLike,
     did: BytesLike,
     proof: ExistenceProofStruct,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   submitPacketWithProof(
@@ -721,7 +872,7 @@ export interface AnconProtocol extends BaseContract {
     key: BytesLike,
     packet: BytesLike,
     proof: ExistenceProofStruct,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
+    overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   verifyProofWithKV(
@@ -733,11 +884,7 @@ export interface AnconProtocol extends BaseContract {
   ): Promise<boolean>;
 
   callStatic: {
-    ENROLL_DAG(overrides?: CallOverrides): Promise<string>;
-
-    ENROLL_PAYMENT(overrides?: CallOverrides): Promise<string>;
-
-    SUBMIT_PAYMENT(overrides?: CallOverrides): Promise<string>;
+    INCLUDED_BLOCKS_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
 
     accountByAddrProofs(
       arg0: string,
@@ -746,9 +893,30 @@ export interface AnconProtocol extends BaseContract {
 
     accountProofs(arg0: BytesLike, overrides?: CallOverrides): Promise<string>;
 
-    accountRegistrationFee(overrides?: CallOverrides): Promise<BigNumber>;
-
-    dagRegistrationFee(overrides?: CallOverrides): Promise<BigNumber>;
+    dagGraphSubscriptions(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
+        token: string;
+        amount: BigNumber;
+        amountStaked: BigNumber;
+        includedBlocks: BigNumber;
+        id: string;
+        incentiveBlocksMonthly: BigNumber;
+        incentivePercentageMonthly: BigNumber;
+        includedBlocksStarted: BigNumber;
+      }
+    >;
 
     getIavlSpec(overrides?: CallOverrides): Promise<ProofSpecStructOutput>;
 
@@ -757,11 +925,11 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    nonce(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     proofs(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
-
-    protocolFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     relayer(overrides?: CallOverrides): Promise<string>;
 
@@ -771,7 +939,45 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    seq(overrides?: CallOverrides): Promise<BigNumber>;
+
     stablecoin(overrides?: CallOverrides): Promise<string>;
+
+    tiers(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber
+      ] & {
+        token: string;
+        amount: BigNumber;
+        amountStaked: BigNumber;
+        includedBlocks: BigNumber;
+        id: string;
+        incentiveBlocksMonthly: BigNumber;
+        incentivePercentageMonthly: BigNumber;
+        includedBlocksStarted: BigNumber;
+      }
+    >;
+
+    totalHeaderUpdatesByDagGraph(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSubmittedByDagGraphUser(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     verify(
       proof: ExistenceProofStruct,
@@ -789,9 +995,19 @@ export interface AnconProtocol extends BaseContract {
 
     getContractIdentifier(overrides?: CallOverrides): Promise<string>;
 
-    setWhitelistedDagGraph(
+    verifyContractIdentifier(
+      usernonce: BigNumberish,
+      sender: string,
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    getNonce(overrides?: CallOverrides): Promise<BigNumber>;
+
+    registerDagGraphTier(
       moniker: BytesLike,
       dagAddress: string,
+      tier: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -807,26 +1023,29 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    addTier(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setTierSettings(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     withdraw(payee: string, overrides?: CallOverrides): Promise<void>;
 
     withdrawToken(
       payee: string,
       erc20token: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setProtocolFee(
-      _fee: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setAccountRegistrationFee(
-      _fee: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setDagGraphFee(
-      _fee: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -886,21 +1105,48 @@ export interface AnconProtocol extends BaseContract {
     HeaderUpdated(moniker?: BytesLike | null): HeaderUpdatedEventFilter;
 
     "ProofPacketSubmitted(bytes,bytes,bytes32)"(
-      key?: null,
+      key?: BytesLike | null,
       packet?: null,
       moniker?: null
     ): ProofPacketSubmittedEventFilter;
     ProofPacketSubmitted(
-      key?: null,
+      key?: BytesLike | null,
       packet?: null,
       moniker?: null
     ): ProofPacketSubmittedEventFilter;
 
-    "ServiceFeePaid(address,uint256)"(
+    "ServiceFeePaid(address,bytes32,bytes32,address,uint256)"(
       from?: string | null,
+      tier?: BytesLike | null,
+      moniker?: BytesLike | null,
+      token?: null,
       fee?: null
     ): ServiceFeePaidEventFilter;
-    ServiceFeePaid(from?: string | null, fee?: null): ServiceFeePaidEventFilter;
+    ServiceFeePaid(
+      from?: string | null,
+      tier?: BytesLike | null,
+      moniker?: BytesLike | null,
+      token?: null,
+      fee?: null
+    ): ServiceFeePaidEventFilter;
+
+    "TierAdded(bytes32)"(id?: BytesLike | null): TierAddedEventFilter;
+    TierAdded(id?: BytesLike | null): TierAddedEventFilter;
+
+    "TierUpdated(bytes32,address,uint256,uint256,uint256)"(
+      id?: BytesLike | null,
+      token?: null,
+      fee?: null,
+      staked?: null,
+      includedBlocks?: null
+    ): TierUpdatedEventFilter;
+    TierUpdated(
+      id?: BytesLike | null,
+      token?: null,
+      fee?: null,
+      staked?: null,
+      includedBlocks?: null
+    ): TierUpdatedEventFilter;
 
     "Withdrawn(address,uint256)"(
       paymentAddress?: string | null,
@@ -913,11 +1159,7 @@ export interface AnconProtocol extends BaseContract {
   };
 
   estimateGas: {
-    ENROLL_DAG(overrides?: CallOverrides): Promise<BigNumber>;
-
-    ENROLL_PAYMENT(overrides?: CallOverrides): Promise<BigNumber>;
-
-    SUBMIT_PAYMENT(overrides?: CallOverrides): Promise<BigNumber>;
+    INCLUDED_BLOCKS_EPOCH(overrides?: CallOverrides): Promise<BigNumber>;
 
     accountByAddrProofs(
       arg0: string,
@@ -929,9 +1171,10 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    accountRegistrationFee(overrides?: CallOverrides): Promise<BigNumber>;
-
-    dagRegistrationFee(overrides?: CallOverrides): Promise<BigNumber>;
+    dagGraphSubscriptions(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getIavlSpec(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -940,11 +1183,11 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    nonce(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     proofs(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
-
-    protocolFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     relayer(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -954,7 +1197,22 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    seq(overrides?: CallOverrides): Promise<BigNumber>;
+
     stablecoin(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tiers(arg0: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalHeaderUpdatesByDagGraph(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSubmittedByDagGraphUser(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     verify(
       proof: ExistenceProofStruct,
@@ -972,9 +1230,19 @@ export interface AnconProtocol extends BaseContract {
 
     getContractIdentifier(overrides?: CallOverrides): Promise<BigNumber>;
 
-    setWhitelistedDagGraph(
+    verifyContractIdentifier(
+      usernonce: BigNumberish,
+      sender: string,
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getNonce(overrides?: CallOverrides): Promise<BigNumber>;
+
+    registerDagGraphTier(
       moniker: BytesLike,
       dagAddress: string,
+      tier: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -982,11 +1250,29 @@ export interface AnconProtocol extends BaseContract {
       moniker: BytesLike,
       rootHash: BytesLike,
       height: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     setPaymentToken(
       tokenAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    addTier(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setTierSettings(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -998,21 +1284,6 @@ export interface AnconProtocol extends BaseContract {
     withdrawToken(
       payee: string,
       erc20token: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setProtocolFee(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setAccountRegistrationFee(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setDagGraphFee(
-      _fee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1030,7 +1301,7 @@ export interface AnconProtocol extends BaseContract {
       key: BytesLike,
       did: BytesLike,
       proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     submitPacketWithProof(
@@ -1040,7 +1311,7 @@ export interface AnconProtocol extends BaseContract {
       key: BytesLike,
       packet: BytesLike,
       proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     verifyProofWithKV(
@@ -1053,11 +1324,9 @@ export interface AnconProtocol extends BaseContract {
   };
 
   populateTransaction: {
-    ENROLL_DAG(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    ENROLL_PAYMENT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    SUBMIT_PAYMENT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    INCLUDED_BLOCKS_EPOCH(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     accountByAddrProofs(
       arg0: string,
@@ -1069,11 +1338,8 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    accountRegistrationFee(
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    dagRegistrationFee(
+    dagGraphSubscriptions(
+      arg0: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1084,14 +1350,17 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    nonce(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     proofs(
       arg0: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    protocolFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     relayer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -1101,7 +1370,25 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    seq(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     stablecoin(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    tiers(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalHeaderUpdatesByDagGraph(
+      arg0: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSubmittedByDagGraphUser(
+      arg0: string,
+      arg1: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     verify(
       proof: ExistenceProofStruct,
@@ -1121,9 +1408,19 @@ export interface AnconProtocol extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    setWhitelistedDagGraph(
+    verifyContractIdentifier(
+      usernonce: BigNumberish,
+      sender: string,
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getNonce(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    registerDagGraphTier(
       moniker: BytesLike,
       dagAddress: string,
+      tier: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1131,11 +1428,29 @@ export interface AnconProtocol extends BaseContract {
       moniker: BytesLike,
       rootHash: BytesLike,
       height: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     setPaymentToken(
       tokenAddress: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addTier(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setTierSettings(
+      id: BytesLike,
+      tokenAddress: string,
+      amount: BigNumberish,
+      amountStaked: BigNumberish,
+      includedBlocks: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1147,21 +1462,6 @@ export interface AnconProtocol extends BaseContract {
     withdrawToken(
       payee: string,
       erc20token: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setProtocolFee(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setAccountRegistrationFee(
-      _fee: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setDagGraphFee(
-      _fee: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1185,7 +1485,7 @@ export interface AnconProtocol extends BaseContract {
       key: BytesLike,
       did: BytesLike,
       proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     submitPacketWithProof(
@@ -1195,7 +1495,7 @@ export interface AnconProtocol extends BaseContract {
       key: BytesLike,
       packet: BytesLike,
       proof: ExistenceProofStruct,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     verifyProofWithKV(
