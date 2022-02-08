@@ -22,7 +22,7 @@ export class TasksService {
   @Cron(CronExpression.EVERY_30_MINUTES)
   async handleCron() {
     const conf = new ConfigService();
-    this.logger.debug('Called every 60 seconds');
+    this.logger.debug('Called every 30 minutes');
 
     const ipfsUrl = conf.get('ANCON_URL');
 
