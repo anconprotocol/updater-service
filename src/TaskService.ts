@@ -19,7 +19,7 @@ import { ConfigService } from '@nestjs/config';
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async handleCron() {
     const conf = new ConfigService();
     this.logger.debug('Called every 60 seconds');

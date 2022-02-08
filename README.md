@@ -71,3 +71,14 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+## cambiar el tiempo del cron job a 30 minutos en TaskService.ts
+
+## Run
+Poner el PK generado en `node` con el nombre del `moniker` en el `.env`
+en las siguientes variables
+DAG_STORE_KEY=
+DAG_STORE_MONIKER=
+
+Despues correr
+`npm start`
