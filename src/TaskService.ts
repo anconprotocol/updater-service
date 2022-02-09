@@ -14,12 +14,12 @@ import {
 } from 'ethers/lib/utils';
 
 import { ConfigService } from '@nestjs/config';
-
+require('dotenv').config();
 @Injectable()
 export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(process.env.RELAYER_TIME)
   async handleCron() {
     const conf = new ConfigService();
     this.logger.debug('Called every 30 minutes');
@@ -39,44 +39,48 @@ export class TasksService {
     // Update relayer header will charge the fee configured in anconprotocol stablecoin.
     // Please approve using console
     for (const relayerName of activeRelayers) {
-      const url = conf.get(relayerName);
-      const provider = new ethers.providers.JsonRpcProvider(url);
-      const signer = new ethers.Wallet(Web3.utils.hexToBytes(pk));
+      try {
+        const url = conf.get(relayerName);
+        const provider = new ethers.providers.JsonRpcProvider(url);
+        const signer = new ethers.Wallet(Web3.utils.hexToBytes(pk));
 
-      const f = new AnconProtocol__factory(signer.connect(provider));
-      const contract = AnconProtocol__factory.connect(
-        conf.get(`${relayerName}_CONTRACT_ADDRESS`),
-        provider,
-      );
-      const contract2 = f.attach(conf.get(`${relayerName}_CONTRACT_ADDRESS`));
+        const f = new AnconProtocol__factory(signer.connect(provider));
+        const contract = AnconProtocol__factory.connect(
+          conf.get(`${relayerName}_CONTRACT_ADDRESS`),
+          provider,
+        );
+        const contract2 = f.attach(conf.get(`${relayerName}_CONTRACT_ADDRESS`));
 
-      const relayHeader = await contract.getProtocolHeader(moniker);
-      const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
-      console.log(
-        await signer.getAddress(),
-        relayHeader,
-        h,
-        parseInt(ipfsRes.data.lastHash.version).toString(),
-      );
-
-      if (relayHeader !== h) {
-        const gasLimit = await contract2.estimateGas.updateRelayerHeader(
-          moniker,
+        const relayHeader = await contract.getProtocolHeader(moniker);
+        const h = hexlify(base64.decode(ipfsRes.data.lastHash.hash));
+        console.log(
+          await signer.getAddress(),
+          relayHeader,
           h,
           parseInt(ipfsRes.data.lastHash.version).toString(),
         );
 
-        let rate = gasLimit.toNumber() * 1.2;
+        if (relayHeader !== h) {
+          const gasLimit = await contract2.estimateGas.updateRelayerHeader(
+            moniker,
+            h,
+            parseInt(ipfsRes.data.lastHash.version).toString(),
+          );
 
-        rate = Math.floor(rate);
+          let rate = gasLimit.toNumber() * 1.2;
 
-        const tx = await contract2.updateRelayerHeader(
-          moniker,
-          h,
-          parseInt(ipfsRes.data.lastHash.version).toString(),
-          { gasLimit: rate.toString() }, //gasPrice: 30000000000 },
-        );
-        console.log(`${relayerName} header updated successfully ${tx.hash}`);
+          rate = Math.floor(rate);
+
+          const tx = await contract2.updateRelayerHeader(
+            moniker,
+            h,
+            parseInt(ipfsRes.data.lastHash.version).toString(),
+            { gasLimit: rate.toString() }, //gasPrice: 30000000000 },
+          );
+          console.log(`${relayerName} header updated successfully ${tx.hash}`);
+        }
+      } catch (error) {
+        console.log('error', error)
       }
     }
   }
