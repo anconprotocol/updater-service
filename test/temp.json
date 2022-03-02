@@ -1,0 +1,25 @@
+{
+  "Transfer": [
+    {
+      "name": "concatTransactionHash",
+      "condition": "tx.from === 0x && tx.to === null",
+      "expression": "dag.txHash = tx.txHash"
+      //result view
+    }
+  ],
+  "Approve": "frontValues.description",
+  "AddMintInfo": [
+    {
+      "name": "concatTransactionHash",
+      "condition": "tx.from === 0x && tx.to === null",
+      "expression": "dag.txHash = tx.txHash"
+    }
+  ] ,
+  "MakeOrder": [
+    {
+      "name": "concatOrderHash",
+      "condition": "tx.orderHash !== null",
+      "expression": "dag.orderHash = tx.orderHash"
+    }
+  ]
+}
