@@ -73,8 +73,9 @@ var example = {
     AddMintInfo: [
         {
             name: 'concatTransactionHash',
-            condition: "(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to == null)",
-            expression: '{...dag, txHash: tx.transactionHash}'
+            condition: "returnValues.creator != null",
+            expression: "assign(dag, append('txHash', tx.transactionHash))",
+            blockFetchCondition: 'returnValues.uri != null'
         },
     ],
     MakeOrder: [
