@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,39 +47,41 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var jexl_1 = require("jexl");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+var jexl = require('jexl');
 var example = {
     Transfer: [
         {
             name: 'concatTransactionHash',
-            condition: 'tx.from === 0x && tx.to === null',
-            expression: 'dag.txHash = tx.txHash',
-            blockFetchCondition: 'tx.to !== null',
-            blockFetchAddress: 'tx.to',
+            condition: "(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to != null)",
+            expression: "assign(dag, append('txHash', tx.transactionHash))",
+            blockFetchCondition: 'returnValues.to != null',
+            blockFetchAddress: 'returnValues.to',
             topicName: '@topic'
         },
-        {
-            name: 'latestNftView',
-            condition: 'tx.from === 0x && tx.to === null',
-            expression: 'dag.txHash = tx.txHash',
-            blockFetchCondition: 'tx.to !== null',
-            blockFetchAddress: 'tx.to',
-            topicName: '@topic'
-        },
+        // {
+        //   name: 'latestNftView',
+        //   condition: `(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to != null)`,
+        //   expression: '{...dag, txHash: tx.transactionHash}',
+        //   blockFetchCondition: 'returnValues.to != null',
+        //   blockFetchAddress: 'returnValues.to',
+        //   topicName: '@topic',
+        //   //result view
+        // },
     ],
     Approve: 'frontValues.description',
     AddMintInfo: [
         {
             name: 'concatTransactionHash',
-            condition: 'tx.from === 0x && tx.to === null',
-            expression: 'dag.txHash = tx.txHash'
+            condition: "(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to == null)",
+            expression: '{...dag, txHash: tx.transactionHash}'
         },
     ],
     MakeOrder: [
         {
             name: 'concatOrderHash',
-            condition: 'tx.orderHash !== null',
-            expression: 'dag.orderHash = tx.orderHash'
+            condition: 'returnValues.orderHash != null',
+            expression: '{...dag, orderHash: returnValues.orderHash}'
         },
     ]
 };
@@ -182,34 +195,78 @@ var dagExample = {
         uuid: 'ebdaf05a-635d-49df-aee7-c690e9adbc9d'
     }
 };
-function main() {
-    return __awaiter(this, void 0, void 0, function () {
-        var a, rule, ruleset, expectedRules;
-        return __generator(this, function (_a) {
-            rule = example;
-            ruleset = rule[transferBlockchainExample.event];
-            console.log('\n [Transfer example event]', transferBlockchainExample.event);
-            debugger;
-            expectedRules = ruleset.filter(function (r) { return jexl_1["default"].eval(r.condition, transferBlockchainExample) === true; });
-            //if from 0 & to != 0 is a mint viceversa is a burn, if both exists, is a transfer
-            //if to exists, fetch the topic
-            if (expectedRules.length > 0) {
-                expectedRules = expectedRules.filter(function (r) { return jexl_1["default"].eval(r.blockFetchCondition, event) === true; });
-                expectedRules.map(function (r) {
-                    var queryAddress = jexl_1["default"].eval(r.blockFetchAddress, event);
-                    //Fetch topic + queryAddress
-                    var dagblock = {};
-                    var context = { dag: dagblock, tx: event };
-                    var result = jexl_1["default"].eval(r.expression, context);
-                    //fetch to postdag (result, rule, cidHash)
-                    // Signed by relayer
-                    return { result: result, rule: r };
-                });
-            }
-            return [2 /*return*/];
-        });
+var assign = function (val1, val2) {
+    return __assign(__assign({}, val1), val2);
+};
+var append = function (key, val) {
+    var _a;
+    return _a = {}, _a[key] = val, _a;
+};
+var main = function () { return __awaiter(void 0, void 0, void 0, function () {
+    var expectedRules, rule, ruleset;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                jexl.addFunction('assign', assign);
+                jexl.addFunction('append', append);
+                rule = example;
+                ruleset = rule[transferBlockchainExample.event];
+                console.log('\n [Transfer example event]', transferBlockchainExample.event);
+                return [4 /*yield*/, ruleset.filter(function (r) { return __awaiter(void 0, void 0, void 0, function () {
+                        var res;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, jexl.eval(r.condition, transferBlockchainExample)];
+                                case 1:
+                                    res = _a.sent();
+                                    console.log('[Eval Res inside filter]', res);
+                                    return [2 /*return*/, res];
+                            }
+                        });
+                    }); })];
+            case 1:
+                expectedRules = _a.sent();
+                //if from 0 & to != 0 is a mint viceversa is a burn, if both exists, is a transfer
+                //if to exists, fetch the topic
+                console.log('\n [Expected rules]', expectedRules.length);
+                if (!(expectedRules.length > 0)) return [3 /*break*/, 3];
+                return [4 /*yield*/, expectedRules.filter(function (r) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, jexl.eval(r.blockFetchCondition, transferBlockchainExample)];
+                                case 1: return [2 /*return*/, ((_a.sent()) ===
+                                        true)];
+                            }
+                        });
+                    }); })];
+            case 2:
+                expectedRules = _a.sent();
+                console.log('\n [Expected rules inside if]', expectedRules);
+                expectedRules.map(function (r) { return __awaiter(void 0, void 0, void 0, function () {
+                    var queryAddress, dagContent, context, result;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4 /*yield*/, jexl.eval(r.blockFetchAddress, transferBlockchainExample)];
+                            case 1:
+                                queryAddress = _a.sent();
+                                dagContent = dagExample.content;
+                                context = { dag: dagContent, tx: transferBlockchainExample };
+                                return [4 /*yield*/, jexl.eval(r.expression, context)];
+                            case 2:
+                                result = _a.sent();
+                                //fetch to postdag (result, rule, cidHash)
+                                // Signed by relayer
+                                console.log('\n[Result]', result, '\n[Rule]', r);
+                                return [2 /*return*/, { result: result, rule: r }];
+                        }
+                    });
+                }); });
+                _a.label = 3;
+            case 3: return [2 /*return*/];
+        }
     });
-}
+}); };
+main().then();
 // async function loadMintedNFTs() {
 //   const _state = await onboard.getState();
 //   const web3 = new Web3(_state.wallet.provider);

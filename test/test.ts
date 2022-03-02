@@ -1,41 +1,43 @@
-import jexl from 'jexl';
+// import jexl from 'jexl';
 import { ethers } from 'ethers';
 import Web3 from 'web3';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const jexl = require('jexl');
 
 const example = {
   Transfer: [
     {
       name: 'concatTransactionHash',
-      condition: 'tx.from === 0x && tx.to === null',
-      expression: 'dag.txHash = tx.txHash',
-      blockFetchCondition: 'tx.to !== null',
-      blockFetchAddress: 'tx.to',
+      condition: `(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to != null)`,
+      expression: `assign(dag, append('txHash', tx.transactionHash))`,
+      blockFetchCondition: 'returnValues.to != null',
+      blockFetchAddress: 'returnValues.to',
       topicName: '@topic',
       //result view
     },
-    {
-      name: 'latestNftView',
-      condition: 'tx.from === 0x && tx.to === null',
-      expression: 'dag.txHash = tx.txHash',
-      blockFetchCondition: 'tx.to !== null',
-      blockFetchAddress: 'tx.to',
-      topicName: '@topic',
-      //result view
-    },
+    // {
+    //   name: 'latestNftView',
+    //   condition: `(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to != null)`,
+    //   expression: '{...dag, txHash: tx.transactionHash}',
+    //   blockFetchCondition: 'returnValues.to != null',
+    //   blockFetchAddress: 'returnValues.to',
+    //   topicName: '@topic',
+    //   //result view
+    // },
   ],
   Approve: 'frontValues.description',
   AddMintInfo: [
     {
       name: 'concatTransactionHash',
-      condition: 'tx.from === 0x && tx.to === null',
-      expression: 'dag.txHash = tx.txHash',
+      condition: `(returnValues.from == '0x0000000000000000000000000000000000000000') && (returnValues.to == null)`,
+      expression: '{...dag, txHash: tx.transactionHash}',
     },
   ],
   MakeOrder: [
     {
       name: 'concatOrderHash',
-      condition: 'tx.orderHash !== null',
-      expression: 'dag.orderHash = tx.orderHash',
+      condition: 'returnValues.orderHash != null',
+      expression: '{...dag, orderHash: returnValues.orderHash}',
     },
   ],
 };
@@ -71,6 +73,7 @@ const blockchainExample = {
     ],
   },
 };
+
 const transferBlockchainExample = {
   address: '0xA7D6e6F21D6D5906eEFC2c30601CEC178e2e6743',
   blockNumber: 17190973,
@@ -165,36 +168,60 @@ const dagExample = {
   },
 };
 
-async function main() {
+const assign = (val1, val2) => {
+  return { ...val1, ...val2 };
+};
+
+const append = (key, val) => {
+  return { [key]: val };
+};
+
+const main = async () => {
+  jexl.addFunction('assign', assign);
+  jexl.addFunction('append', append);
   let expectedRules;
   const rule = example;
   const ruleset = rule[transferBlockchainExample.event];
   console.log('\n [Transfer example event]', transferBlockchainExample.event);
 
-  expectedRules = ruleset.filter((r) => {
-    return jexl.eval(r.condition, transferBlockchainExample) === true;
+  expectedRules = await ruleset.filter(async (r) => {
+    const res = await jexl.eval(r.condition, transferBlockchainExample);
+    console.log('[Eval Res inside filter]', res);
+    return res;
   });
 
   //if from 0 & to != 0 is a mint viceversa is a burn, if both exists, is a transfer
   //if to exists, fetch the topic
+
+  console.log('\n [Expected rules]', expectedRules.length);
+
   if (expectedRules.length > 0) {
-    expectedRules = expectedRules.filter((r) => {
+    expectedRules = await expectedRules.filter(async (r) => {
       return (
-        jexl.eval(r.blockFetchCondition, transferBlockchainExample) === true
+        (await jexl.eval(r.blockFetchCondition, transferBlockchainExample)) ===
+        true
       );
     });
-    expectedRules.map((r) => {
-      const queryAddress = jexl.eval(r.blockFetchAddress, event);
+    console.log('\n [Expected rules inside if]', expectedRules);
+
+    expectedRules.map(async (r) => {
+      const queryAddress = await jexl.eval(
+        r.blockFetchAddress,
+        transferBlockchainExample,
+      );
       //Fetch topic + queryAddress
-      const dagblock = {};
-      const context = { dag: dagblock, tx: event };
-      const result = jexl.eval(r.expression, context);
+      const dagContent = dagExample.content;
+      const context = { dag: dagContent, tx: transferBlockchainExample };
+      const result = await jexl.eval(r.expression, context);
       //fetch to postdag (result, rule, cidHash)
       // Signed by relayer
+      console.log('\n[Result]', result, '\n[Rule]', r);
       return { result: result, rule: r };
     });
   }
-}
+};
+
+main().then();
 // async function loadMintedNFTs() {
 //   const _state = await onboard.getState();
 //   const web3 = new Web3(_state.wallet.provider);
