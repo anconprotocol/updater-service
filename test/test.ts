@@ -68,7 +68,8 @@ const blockchainExample = {
   signature:
     '0x0a59a585b9550719952b099b96c48342a827bee7469998fdbdfb68477e412931',
   raw: {
-    data: '0x0000000000000000000000002f4167f834892fb7f2691883867aec12fc4863710000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000005dc000000000000000000000000000000000000000000000000000000000000002461663634346661352d633161662d343631622d626430352d39383634636165616565663800000000000000000000000000000000000000000000000000000000',
+    data:
+      '0x0000000000000000000000002f4167f834892fb7f2691883867aec12fc4863710000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000005dc000000000000000000000000000000000000000000000000000000000000002461663634346661352d633161662d343631622d626430352d39383634636165616565663800000000000000000000000000000000000000000000000000000000',
     topics: [
       '0x0a59a585b9550719952b099b96c48342a827bee7469998fdbdfb68477e412931',
     ],
@@ -96,7 +97,8 @@ const transferBlockchainExample = {
   signature:
     '0x0a59a585b9550719952b099b96c48342a827bee7469998fdbdfb68477e412931',
   raw: {
-    data: '0x0000000000000000000000002f4167f834892fb7f2691883867aec12fc4863710000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000005dc000000000000000000000000000000000000000000000000000000000000002461663634346661352d633161662d343631622d626430352d39383634636165616565663800000000000000000000000000000000000000000000000000000000',
+    data:
+      '0x0000000000000000000000002f4167f834892fb7f2691883867aec12fc4863710000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000005dc000000000000000000000000000000000000000000000000000000000000002461663634346661352d633161662d343631622d626430352d39383634636165616565663800000000000000000000000000000000000000000000000000000000',
     topics: [
       '0x0a59a585b9550719952b099b96c48342a827bee7469998fdbdfb68477e412931',
     ],
@@ -110,7 +112,8 @@ const blockchainGetAllEvents = {
     myNonIndexParam: 'My String',
   },
   raw: {
-    data: '0x7f9fade1c0d57a7af66ab4ead79fade1c0d57a7af66ab4ead7c2c2eb7b11a91385',
+    data:
+      '0x7f9fade1c0d57a7af66ab4ead79fade1c0d57a7af66ab4ead7c2c2eb7b11a91385',
     topics: [
       '0xfd43ade1c09fade1c0d57a7af66ab4ead7c2c2eb7b11a91ffdd57a7af66ab4ead7',
       '0x7f9fade1c0d57a7af66ab4ead79fade1c0d57a7af66ab4ead7c2c2eb7b11a91385',
@@ -137,7 +140,8 @@ const dagExample = {
   digest: '0xa33469f7f4eb0213d1f3c897e6d2fe3911ea91511f84ed040a4b0dc68907599b',
   height: 269,
   issuer: '0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6',
-  key: 'YW5jb25wcm90b2NvbC91c2Vycy9kaWQ6ZXRocjpibmJ0OjB4MzJBMjFjMWJCNkU3QzIwRjU0N2U5MzBiNTNkQUM1N2Y0MmNkMjVGNi9iYWd1cWVlcmFjeGQ3aWR1N2pqeHZib3ltNmxtMjJ0bGNqc3NqNXh2ZnJleWRtbnRraGVpcHFjYnhtMjRx',
+  key:
+    'YW5jb25wcm90b2NvbC91c2Vycy9kaWQ6ZXRocjpibmJ0OjB4MzJBMjFjMWJCNkU3QzIwRjU0N2U5MzBiNTNkQUM1N2Y0MmNkMjVGNi9iYWd1cWVlcmFjeGQ3aWR1N2pqeHZib3ltNmxtMjJ0bGNqc3NqNXh2ZnJleWRtbnRraGVpcHFjYnhtMjRx',
   lastBlockHash: {
     '/': 'baguqeeranvsy7kickuqzmugxwe3vmxsmz5mdqlst3vvdmv76hq3wumvlruqa',
   },
@@ -177,25 +181,22 @@ const append = (key, val) => {
   return { [key]: val };
 };
 
-const main = async () => {
+const onEvent = async () => {
+  // helper functions
   jexl.addFunction('assign', assign);
   jexl.addFunction('append', append);
-  let expectedRules;
+
+  // Lookup by event
   const rule = example;
   const ruleset = rule[transferBlockchainExample.event];
-  console.log('\n [Transfer example event]', transferBlockchainExample.event);
 
+  // Lookup by condition
+  let expectedRules = [];
   expectedRules = await ruleset.filter(async (r) => {
-    const res = await jexl.eval(r.condition, transferBlockchainExample);
-    console.log('[Eval Res inside filter]', res);
-    return res;
+    return await jexl.eval(r.condition, transferBlockchainExample);
   });
 
-  //if from 0 & to != 0 is a mint viceversa is a burn, if both exists, is a transfer
-  //if to exists, fetch the topic
-
-  console.log('\n [Expected rules]', expectedRules.length);
-
+  // Lookup by DAG block condition, note this could be a single liner
   if (expectedRules.length > 0) {
     expectedRules = await expectedRules.filter(async (r) => {
       return (
@@ -203,21 +204,17 @@ const main = async () => {
         true
       );
     });
-    console.log('\n [Expected rules inside if]', expectedRules);
-
     expectedRules.map(async (r) => {
       const queryAddress = await jexl.eval(
         r.blockFetchAddress,
         transferBlockchainExample,
       );
-      //Fetch topic + queryAddress
+      // TODO: Fetch topic + queryAddress eg Waku, Swarm Bee or Ancon protocol
       const dagContent = dagExample.content;
       const context = { dag: dagContent, tx: transferBlockchainExample };
       const result = await jexl.eval(r.expression, context);
-      //fetch to postdag (result, rule, cidHash)
-      // Signed by relayer
-      console.log('\n[Result]', result, '\n[Rule]', r);
-      return { result: result, rule: r };
+      // TODO: Mutate topic + Sign
+      return { result: result, rule: r, signedBlock: {} };
     });
   }
 };

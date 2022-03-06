@@ -12,15 +12,17 @@ import {
   keccak256,
   toUtf8Bytes,
 } from 'ethers/lib/utils';
-
+import { DAGChainReduxHandler } from './redux';
 import { ConfigService } from '@nestjs/config';
 require('dotenv').config();
+
 @Injectable()
 export class DAGReducerService {
   private readonly logger = new Logger(DAGReducerService.name);
 
   @Cron(process.env.REDUCER_INTERVAL)
   async handleAllEvents() {
+    const dagChainReduxHandler = new DAGChainReduxHandler();
     const conf = new ConfigService();
     this.logger.debug('Called every 30 minutes');
 
@@ -31,44 +33,11 @@ export class DAGReducerService {
     const pk = conf.get(`DAG_STORE_KEY`);
     const signer = new ethers.Wallet(Web3.utils.hexToBytes(pk));
     // TODO: Listener getAllEvents
-
     // TODO: Fetch JEXL smart contracts by CID hash
-
-    //
-
-    // Update relayer header will charge the fee configured in anconprotocol stablecoin.
+    const rules = {};
+    const evt = {};
+    dagChainReduxHandler.handleEvent(rules, evt);
+    // TODO: Write DAG
+    // TODO: PING relayer
   }
 }
-
-// function toABIproofs() {
-//   const z: any = { ...proofCombined[0].exist };
-//   z.key = hexlify(base64.decode(z.key));
-//   z.value = hexlify(base64.decode(z.value));
-//   z.leaf.prefix = hexlify(base64.decode(z.leaf.prefix));
-//   z.leaf.hash = 1;
-//   z.path = z.path.map((x) => {
-//     let suffix;
-//     if (!!x.suffix) {
-//       suffix = hexlify(base64.decode(x.suffix));
-//       return {
-//         valid: true,
-//         prefix: hexlify(base64.decode(x.prefix)),
-//         suffix: suffix,
-//         hash: 1,
-//       };
-//     } else {
-//       return {
-//         valid: true,
-//         prefix: hexlify(base64.decode(x.prefix)),
-//         hash: 1,
-//         suffix: '0x',
-//       };
-//     }
-//   });
-//   z.leaf.prehash_key = 0;
-//   z.leaf.len = z.leaf.length;
-//   z.valid = true;
-//   z.leaf.valid = true;
-
-//   return z;
-// }
