@@ -14,6 +14,7 @@ import {
 } from 'ethers/lib/utils';
 
 import { ConfigService } from '@nestjs/config';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 @Injectable()
 export class TasksService {
@@ -80,7 +81,7 @@ export class TasksService {
           console.log(`${relayerName} header updated successfully ${tx.hash}`);
         }
       } catch (error) {
-        console.log('error', error)
+        console.log('error', error);
       }
     }
   }
