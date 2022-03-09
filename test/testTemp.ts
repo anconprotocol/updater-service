@@ -15,6 +15,7 @@ import AnconProtocol from '../src/utils/AnconProtocol';
 import { DAGChainReduxHandler } from '../src/redux';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
+require('fetch');
 
 const rules = {
   AddMintInfo: [
@@ -95,11 +96,13 @@ const main = async () => {
   const url = conf.get('BSC_TESTNET');
   const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
   const network = await jRPCprovider.getNetwork();
-
   const pk = conf.get(`DAG_STORE_KEY`);
   const wallet = new ethers.Wallet(Web3.utils.hexToBytes(pk));
 
   const web3 = new Web3(url);
+  const ethWeb3Prov = new ethers.providers.Web3Provider(
+    web3.currentProvider as any,
+  );
 
   const { AnconNFTContract, MarketPlaceContract } = helper.getContracts(
     wallet,
@@ -112,14 +115,16 @@ const main = async () => {
   );
 
   console.log('[Instance ANCON]');
-  // const Ancon = new AnconProtocol(
-  //   null,
-  //   signer.address,
-  //   '',
-  //   'https://tensta.did.pa/v0/',
-  //   '',
-  //   '',
-  // );
+  const Ancon = new AnconProtocol(
+    ethWeb3Prov,
+    wallet.address,
+    'https://tensta.did.pa/v0/',
+  );
+
+  await Ancon.initialize();
+
+  const domainName = await Ancon.getDomainName();
+  console.log('[ANCON Domain Name]', domainName);
 
   setInterval(async () => {
     const currentBlock = await web3.eth.getBlockNumber();
@@ -127,8 +132,9 @@ const main = async () => {
       toBlock: currentBlock,
       fromBlock: currentBlock - 3,
     });
-    console.log('[BLOCKS]', currentBlock);
-    console.log('[All events]', allEvents);
+    console.log('\n[FROM]', currentBlock - 3, '[TO]', currentBlock);
+    console.log('[Events batch lenght]', allEvents.length);
+    console.log('[Event batch]', allEvents, '\n');
     allEvents.map((evt) => {
       dagChainReduxHandler.handleEvent(evt);
     });

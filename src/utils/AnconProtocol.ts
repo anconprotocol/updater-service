@@ -2,6 +2,8 @@ import { ethers } from 'ethers';
 import Web3 from 'web3';
 import { XDVNFT__factory } from '../types/ethers-contracts';
 import { AnconProtocol__factory } from '../types/ethers-contracts/factories/AnconProtocol__factory';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetch = require('fetch');
 
 declare let window: any;
 
@@ -24,20 +26,20 @@ export default class AnconProtocol {
   constructor(
     provider: any,
     address: string,
-    moniker: string,
-    anconEndpoint: string,
-    anconAddress: string,
+    // moniker: string,
+    // anconEndpoint: string,
+    // anconAddress: string,
     xdvnftAdress: string,
   ) {
     this.provider = provider;
     this.address = address;
-    this.signer = this.prov.getSigner();
+    this.signer = this.provider.getSigner();
     this.network = '';
     this.postProofCid = '';
-    this.anconAddress = anconAddress;
+    // this.anconAddress = anconAddress;
     this.xdvnftAdress = xdvnftAdress;
-    this.moniker = moniker;
-    this.anconEndpoint = anconEndpoint;
+    // this.moniker = moniker;
+    // this.anconEndpoint = anconEndpoint;
   }
 
   async initialize() {
@@ -47,8 +49,9 @@ export default class AnconProtocol {
    * @returns returns the network the user is in
    */
   async getNetwork() {
-    const network = await this.prov.getNetwork();
+    const network = await this.provider.getNetwork();
     this.network = network;
+    console.log('NETWORKI', network);
     // await this.getContractAddresses(network);
   }
 
@@ -263,145 +266,145 @@ export default class AnconProtocol {
    * @param proof the to abi proof
    * @returns the result of the enrollment
    */
-  async enrollL2Account(cid: string, proof: any) {
-    // try {
-    const anconContractReader = AnconProtocol__factory.connect(
-      this.anconAddress,
-      this.prov,
-    );
-    const contract2 = AnconProtocol__factory.connect(
-      this.anconAddress,
-      this.signer,
-    );
+  // async enrollL2Account(cid: string, proof: any) {
+  //   // try {
+  //   const anconContractReader = AnconProtocol__factory.connect(
+  //     this.anconAddress,
+  //     this.prov,
+  //   );
+  //   const contract2 = AnconProtocol__factory.connect(
+  //     this.anconAddress,
+  //     this.signer,
+  //   );
 
-    // encoded to utf8
-    const UTF8_cid = ethers.utils.toUtf8Bytes(cid);
+  //   // encoded to utf8
+  //   const UTF8_cid = ethers.utils.toUtf8Bytes(cid);
 
-    // get proof
-    const getProof = await anconContractReader.getProof(UTF8_cid);
+  //   // get proof
+  //   const getProof = await anconContractReader.getProof(UTF8_cid);
 
-    if (getProof !== '0x') {
-      return 'proof already exist';
-    }
+  //   if (getProof !== '0x') {
+  //     return 'proof already exist';
+  //   }
 
-    await this.getPastEvents();
+  //   await this.getPastEvents();
 
-    // estimate gas
-    const gasLimit = await contract2.estimateGas.enrollL2Account(
-      this.moniker,
-      proof.key,
-      UTF8_cid,
-      proof,
-    );
-    const decimalRate = gasLimit.toNumber() * 1.2;
-    const rate = Math.floor(decimalRate);
+  //   // estimate gas
+  //   const gasLimit = await contract2.estimateGas.enrollL2Account(
+  //     this.moniker,
+  //     proof.key,
+  //     UTF8_cid,
+  //     proof,
+  //   );
+  //   const decimalRate = gasLimit.toNumber() * 1.2;
+  //   const rate = Math.floor(decimalRate);
 
-    // enroll account
-    const enroll = await contract2.enrollL2Account(
-      this.moniker,
-      proof.key,
-      UTF8_cid,
-      proof,
-      {
-        gasLimit: rate.toString(),
-      },
-    );
-    await enroll?.wait(1);
+  //   // enroll account
+  //   const enroll = await contract2.enrollL2Account(
+  //     this.moniker,
+  //     proof.key,
+  //     UTF8_cid,
+  //     proof,
+  //     {
+  //       gasLimit: rate.toString(),
+  //     },
+  //   );
+  //   await enroll?.wait(1);
 
-    return enroll;
-  }
+  //   return enroll;
+  // }
 
   /**
    *
    * @returns returns true when the protocol is updated
    */
-  async getPastEvents() {
-    // instiate the contract
-    const AnconReader = await AnconProtocol__factory.connect(
-      this.anconAddress,
-      this.prov,
-    );
+  // async getPastEvents() {
+  //   // instiate the contract
+  //   const AnconReader = await AnconProtocol__factory.connect(
+  //     this.anconAddress,
+  //     this.prov,
+  //   );
 
-    // filter the contract
-    const filter = await AnconReader.filters.HeaderUpdated(this.moniker);
+  //   // filter the contract
+  //   const filter = await AnconReader.filters.HeaderUpdated(this.moniker);
 
-    // get the from
-    const from = await this.prov.getBlockNumber();
+  //   // get the from
+  //   const from = await this.prov.getBlockNumber();
 
-    // query the filter
-    let result = await AnconReader.queryFilter(filter, from);
+  //   // query the filter
+  //   let result = await AnconReader.queryFilter(filter, from);
 
-    // checking hashes
-    const rawLastHash = await fetch(`${this.anconEndpoint}proofs/lasthash`);
-    const lasthash = await rawLastHash.json();
-    const decodedlastHash = ethers.utils.hexlify(
-      ethers.utils.base64.decode(lasthash.lastHash.hash),
-    );
+  //   // checking hashes
+  //   const rawLastHash = await fetch(`${this.anconEndpoint}proofs/lasthash`);
+  //   const lasthash = await rawLastHash.json();
+  //   const decodedlastHash = ethers.utils.hexlify(
+  //     ethers.utils.base64.decode(lasthash.lastHash.hash),
+  //   );
 
-    let sequence = lasthash.lastHash.version;
+  //   let sequence = lasthash.lastHash.version;
 
-    let time = Date.now();
-    const maxTime = Date.now() + 120000;
-    const relayHash = '0x';
-    while (time < maxTime) {
-      try {
-        sequence += 1;
-        result = await AnconReader.queryFilter(filter, from);
+  //   let time = Date.now();
+  //   const maxTime = Date.now() + 120000;
+  //   const relayHash = '0x';
+  //   while (time < maxTime) {
+  //     try {
+  //       sequence += 1;
+  //       result = await AnconReader.queryFilter(filter, from);
 
-        if (result.length > 0) {
-          break;
-        }
-        time = Date.now();
-        await sleep(1000);
-      } catch (error) {
-        console.log('error', error);
-      }
-    }
-    return true;
-  }
+  //       if (result.length > 0) {
+  //         break;
+  //       }
+  //       time = Date.now();
+  //       await sleep(1000);
+  //     } catch (error) {
+  //       console.log('error', error);
+  //     }
+  //   }
+  //   return true;
+  // }
 
-  async mintNft(hexData: string, userProofKey: string) {
-    const xdvSigner = XDVNFT__factory.connect(this.xdvnftAdress, this.signer);
+  // async mintNft(hexData: string, userProofKey: string) {
+  //   const xdvSigner = XDVNFT__factory.connect(this.xdvnftAdress, this.signer);
 
-    await sleep(7000);
+  //   await sleep(7000);
 
-    const did = await this.getDidTransaction();
+  //   const did = await this.getDidTransaction();
 
-    // get the last hash
-    const rawLastHash = await fetch(`${this.anconEndpoint}proofs/lasthash`);
-    const lasthash = await rawLastHash.json();
-    const version = lasthash.lastHash.version;
+  //   // get the last hash
+  //   const rawLastHash = await fetch(`${this.anconEndpoint}proofs/lasthash`);
+  //   const lasthash = await rawLastHash.json();
+  //   const version = lasthash.lastHash.version;
 
-    /* prepare the packet and user proof
-     */
-    // prepare packet proof
-    const packetProof = await this.getProof(userProofKey, version);
+  //   /* prepare the packet and user proof
+  //    */
+  //   // prepare packet proof
+  //   const packetProof = await this.getProof(userProofKey, version);
 
-    // prepare user proof
-    const userProof = await this.getProof(did.key, version);
+  //   // prepare user proof
+  //   const userProof = await this.getProof(did.key, version);
 
-    // estimate gas
-    const gasLimit = await xdvSigner.estimateGas.mintWithProof(
-      hexData,
-      userProof,
-      packetProof,
-    );
-    const decimalRate = gasLimit.toNumber() * 1.2;
-    const rate = Math.floor(decimalRate);
-    // start minting
+  //   // estimate gas
+  //   const gasLimit = await xdvSigner.estimateGas.mintWithProof(
+  //     hexData,
+  //     userProof,
+  //     packetProof,
+  //   );
+  //   const decimalRate = gasLimit.toNumber() * 1.2;
+  //   const rate = Math.floor(decimalRate);
+  //   // start minting
 
-    let mint;
-    try {
-      mint = await xdvSigner.mintWithProof(hexData, userProof, packetProof, {
-        gasLimit: rate.toString(),
-      });
-    } catch (error) {
-      sleep(5000);
-      console.log('failed, trying again...', error);
-      mint = await xdvSigner.mintWithProof(hexData, userProof, packetProof);
-    }
-    return mint;
-  }
+  //   let mint;
+  //   try {
+  //     mint = await xdvSigner.mintWithProof(hexData, userProof, packetProof, {
+  //       gasLimit: rate.toString(),
+  //     });
+  //   } catch (error) {
+  //     sleep(5000);
+  //     console.log('failed, trying again...', error);
+  //     mint = await xdvSigner.mintWithProof(hexData, userProof, packetProof);
+  //   }
+  //   return mint;
+  // }
 
   async getDomainName() {
     const rawResponse = await fetch(
@@ -421,39 +424,39 @@ export default class AnconProtocol {
     return data;
   }
 
-  async uploadFile(file: any) {
-    const body = new FormData();
+  // async uploadFile(file: any) {
+  //   const body = new FormData();
 
-    body.append('file', file[0]);
-    let ipfsRes;
-    let ipfsResBody;
-    try {
-      ipfsRes = await fetch('' + this.anconEndpoint + 'file', {
-        method: 'post',
-        body: body,
-      });
+  //   body.append('file', file[0]);
+  //   let ipfsRes;
+  //   let ipfsResBody;
+  //   try {
+  //     ipfsRes = await fetch('' + this.anconEndpoint + 'file', {
+  //       method: 'post',
+  //       body: body,
+  //     });
 
-      ipfsResBody = await ipfsRes.json();
-    } catch (error) {
-      console.log('confirmation error', error);
-    }
-    return ipfsResBody.cid;
-  }
+  //     ipfsResBody = await ipfsRes.json();
+  //   } catch (error) {
+  //     console.log('confirmation error', error);
+  //   }
+  //   return ipfsResBody.cid;
+  // }
 
-  async verifyBlockchainExistence(proof: any) {
-    const anconReader = AnconProtocol__factory.connect(
-      this.xdvnftAdress,
-      this.prov,
-    );
-    console.log(typeof this.moniker, this.moniker);
-    console.log(proof.key, proof.value);
-    const verify = await anconReader.verifyProofWithKV(
-      this.moniker,
-      proof.key,
-      proof.value,
-      proof,
-    );
-  }
+  // async verifyBlockchainExistence(proof: any) {
+  //   const anconReader = AnconProtocol__factory.connect(
+  //     this.xdvnftAdress,
+  //     this.prov,
+  //   );
+  //   console.log(typeof this.moniker, this.moniker);
+  //   console.log(proof.key, proof.value);
+  //   const verify = await anconReader.verifyProofWithKV(
+  //     this.moniker,
+  //     proof.key,
+  //     proof.value,
+  //     proof,
+  //   );
+  // }
 }
 
 export function sleep(ms: any) {
