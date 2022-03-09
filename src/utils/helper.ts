@@ -1,20 +1,26 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import Web3 from 'web3';
 import { ethers } from 'ethers';
+import { ConfigService } from '@nestjs/config';
 const AnconNFT = require('../contracts/AnconNFT.sol/AnconNFT.json');
 const NFTEX = require('../contracts/NFTEX.sol/NFTEX.json');
+require('dotenv').config();
 
 class helper {
   static getContracts(_wallet: ethers.Wallet, _web3: Web3) {
+    const conf = new ConfigService();
     const wallet = _wallet;
     const web3 = _web3;
     web3.eth.defaultAccount = wallet.address;
-    const anconNFTContractAddress = process.env.REACT_APP_AnconTestNFTAddress;
+    console.log('[default account]', web3.eth.defaultAccount);
+    const anconNFTContractAddress = conf.get(`AnconTestNFTAddress`);
+    console.log('[anconNFTContractAddress]', anconNFTContractAddress);
     const _anconNFTContract = new web3.eth.Contract(
       AnconNFT.abi,
       anconNFTContractAddress,
     );
-    const marketPlaceContractAddress = process.env.REACT_APP_MarketplaceAddress;
+    const marketPlaceContractAddress = conf.get(`MarketplaceAddress`);
+    console.log('[marketPlaceContractAddress]', marketPlaceContractAddress);
     const _marketPlaceContract = new web3.eth.Contract(
       NFTEX.abi,
       marketPlaceContractAddress,

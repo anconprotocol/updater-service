@@ -36,18 +36,24 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var config_1 = require("@nestjs/config");
 var AnconNFT = require('../contracts/AnconNFT.sol/AnconNFT.json');
 var NFTEX = require('../contracts/NFTEX.sol/NFTEX.json');
+require('dotenv').config();
 var helper = /** @class */ (function () {
     function helper() {
     }
     helper.getContracts = function (_wallet, _web3) {
+        var conf = new config_1.ConfigService();
         var wallet = _wallet;
         var web3 = _web3;
         web3.eth.defaultAccount = wallet.address;
-        var anconNFTContractAddress = process.env.REACT_APP_AnconTestNFTAddress;
+        console.log('[default account]', web3.eth.defaultAccount);
+        var anconNFTContractAddress = conf.get("AnconTestNFTAddress");
+        console.log('[anconNFTContractAddress]', anconNFTContractAddress);
         var _anconNFTContract = new web3.eth.Contract(AnconNFT.abi, anconNFTContractAddress);
-        var marketPlaceContractAddress = process.env.REACT_APP_MarketplaceAddress;
+        var marketPlaceContractAddress = conf.get("MarketplaceAddress");
+        console.log('[marketPlaceContractAddress]', marketPlaceContractAddress);
         var _marketPlaceContract = new web3.eth.Contract(NFTEX.abi, marketPlaceContractAddress);
         return {
             AnconNFTContract: _anconNFTContract,
