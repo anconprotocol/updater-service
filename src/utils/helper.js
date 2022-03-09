@@ -38,24 +38,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var AnconNFT = require('../contracts/AnconNFT.sol/AnconNFT.json');
 var NFTEX = require('../contracts/NFTEX.sol/NFTEX.json');
-var AnconToken = require('../contracts/ANCON.sol/ANCON.json');
-var AnconProtocol = require('../contracts/AnconProtocol.json');
 var helper = /** @class */ (function () {
     function helper() {
     }
     helper.getContracts = function (_wallet, _web3) {
         var wallet = _wallet;
-        // const state = onboard.getState();
         var web3 = _web3;
         web3.eth.defaultAccount = wallet.address;
         var anconNFTContractAddress = process.env.REACT_APP_AnconTestNFTAddress;
         var _anconNFTContract = new web3.eth.Contract(AnconNFT.abi, anconNFTContractAddress);
         var marketPlaceContractAddress = process.env.REACT_APP_MarketplaceAddress;
         var _marketPlaceContract = new web3.eth.Contract(NFTEX.abi, marketPlaceContractAddress);
-        var anconTokenContractAddress = process.env.REACT_APP_AnconTokenAddress;
-        var _anconTokenContract = new web3.eth.Contract(AnconToken.abi, anconTokenContractAddress);
-        var anconProtocolContractAddress = process.env.REACT_APP_AnconProtocolAddress;
-        var _anconProtocolContract = new web3.eth.Contract(AnconProtocol.abi, anconProtocolContractAddress);
         return {
             AnconNFTContract: _anconNFTContract,
             MarketPlaceContract: _marketPlaceContract
