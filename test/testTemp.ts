@@ -12,8 +12,22 @@ import { ConfigService } from '@nestjs/config';
 import helper from '../src/utils/helper';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import AnconProtocol from '../src/utils/AnconProtocol';
+import { DAGChainReduxHandler } from '../src/redux';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
+
+const rules = {
+  AddMintInfo: [
+    {
+      name: 'concatTransactionHash',
+      condition: `returnValues.creator != null`,
+      expression: `assign(dag, append('txHash', tx.transactionHash))`,
+      blockFetchCondition: 'returnValues.uri != null',
+      blockFetchAddress: 'returnValues.creator',
+      topicName: '@mintIndex',
+    },
+  ],
+};
 
 const anconPostMetadata = async (
   _address,
@@ -75,69 +89,50 @@ const anconPostMetadata = async (
 const main = async () => {
   const conf = new ConfigService();
 
-  const anconUrl = conf.get('ANCON_URL_TENSTA');
+  const anconEndpoint = conf.get('ANCON_URL_TENSTA');
 
   const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
   const url = conf.get('BSC_TESTNET');
-  const provider = new ethers.providers.JsonRpcProvider(url);
-  const network = await provider.getNetwork();
-  console.log('[GET NETWORK]', network);
+  const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
+  const network = await jRPCprovider.getNetwork();
 
   const pk = conf.get(`DAG_STORE_KEY`);
-  const signer = new ethers.Wallet(Web3.utils.hexToBytes(pk));
-  const web3 = new Web3(provider as any);
+  const wallet = new ethers.Wallet(Web3.utils.hexToBytes(pk));
 
-  // const a = new ethers.providers.Web3Provider(provider, network);
+  const web3 = new Web3(url);
 
-  // console.log('[WEB 3]', web3);
-
-  // let nftContract, marketContract;
   const { AnconNFTContract, MarketPlaceContract } = helper.getContracts(
-    signer,
+    wallet,
     web3,
   );
-
-  console.log('[Suscribing to NFT mint]');
-
-  const nftSuscription = await web3.eth
-    .subscribe(
-      'logs',
-      {
-        address: conf.get('AnconTestNFTAddress'),
-        topics: [
-          '0x0a59a585b9550719952b099b96c48342a827bee7469998fdbdfb68477e412931',
-        ],
-      },
-      function (error, result) {
-        if (!error) {
-          console.log('[RESULT]', result);
-
-          return;
-        }
-
-        console.error('[ERROR]', error);
-      },
-    )
-    .on('connected', function (subscriptionId) {
-      console.log('[SUB ID]', subscriptionId);
-    })
-    .on('data', function (blockHeader) {
-      console.log('[BLOCKHEADER]', blockHeader);
-    })
-    .on('error', console.error);
-
-  // nftSuscription
-  console.log('[Suscribe NFT Res]', nftSuscription);
+  const dagChainReduxHandler = new DAGChainReduxHandler(
+    rules,
+    wallet.address,
+    anconEndpoint,
+  );
 
   console.log('[Instance ANCON]');
-  //const Ancon = new AnconProtocol(
-  //  null,
-  //  signer.address,
-  //  '',
-  //  'https://tensta.did.pa/v0/',
-  //  '',
-  //  '',
-  //);
+  // const Ancon = new AnconProtocol(
+  //   null,
+  //   signer.address,
+  //   '',
+  //   'https://tensta.did.pa/v0/',
+  //   '',
+  //   '',
+  // );
+
+  setInterval(async () => {
+    const currentBlock = await web3.eth.getBlockNumber();
+    const allEvents = await AnconNFTContract.getPastEvents('AddMintInfo', {
+      toBlock: currentBlock,
+      fromBlock: currentBlock - 3,
+    });
+    console.log('[BLOCKS]', currentBlock);
+    console.log('[All events]', allEvents);
+    allEvents.map((evt) => {
+      dagChainReduxHandler.handleEvent(evt);
+    });
+  }, 5000);
 
   if (false) {
     // anconPostMetadata(signer.address, '', provider, anconUrl, Ancon);

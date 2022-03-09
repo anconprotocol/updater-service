@@ -38,6 +38,7 @@
     "@nestjs/schedule": "^1.0.2",
     "axios": "^0.24.0",
     "ethers": "^5.5.2",
+    "fetch": "^1.1.0",
     "jexl": "^2.3.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

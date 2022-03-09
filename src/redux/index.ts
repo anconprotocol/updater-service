@@ -12,16 +12,22 @@ const append = (key, val) => {
 };
 
 export class DAGChainReduxHandler {
-  constructor() {
+  constructor(
+    private rules: any,
+    private from: string,
+    private anconEndpoint: string,
+  ) {
     // helper functions
     jexl.addFunction('assign', assign);
     jexl.addFunction('append', append);
   }
 
-  async handleEvent(jexlSmartContractRules: any, evmEvent: any): Promise<any> {
+  async handleEvent(evmEvent: any): Promise<any> {
     // Lookup by event
-    const rule = jexlSmartContractRules;
+    const rule = this.rules;
     const ruleset = rule[evmEvent.event];
+
+    if (ruleset === null) return;
 
     // Lookup by condition
     let expectedRules = [];
@@ -38,11 +44,17 @@ export class DAGChainReduxHandler {
         const queryAddress = await jexl.eval(r.blockFetchAddress, evmEvent);
         // TODO: Fetch topic + queryAddress eg Waku, Swarm Bee or Ancon protocol
         const dagExample = {};
-        const dagContent = dagExample.content;
+        const topicRes = await fetch(
+          `${this.anconEndpoint}v0/topics?topic=${r[0].topicName}&from=${this.from}`,
+        );
+
+        const topicResJson = await topicRes.json();
+        const dagContent = topicResJson.content;
+
         const context = { dag: dagContent, tx: evmEvent };
         const result = await jexl.eval(r.expression, context);
         // TODO: Mutate topic + Sign
-        return { result: result, rule: r, signedBlock: {} };
+        return { result: result, rule: r };
       });
 
       return true; // TODO: return result
