@@ -33,20 +33,15 @@ const rules = {
 const anconPostMetadata = async (
   _address,
   _uuid: string,
-  _ethrProv: JsonRpcProvider,
-  _anconUrl: string,
+  _web3Prov: ethers.providers.Web3Provider,
   Ancon: AnconProtocol,
+  payload: any,
 ) => {
   //user Ancon ethers instance
-  const signer = await _ethrProv.getSigner();
-  const network = await _ethrProv.getNetwork();
+  const signer = await _web3Prov.getSigner();
+  const network = await _web3Prov.getNetwork();
 
   const domainNameResponse = `did:ethr:${network.name}:${_address}`;
-  // const primarySource = `${_anconUrl}/v0/file/${_uploadFileRes.cid}/`;
-  const payload = {
-    data1: 'data1',
-    data2: 'data2',
-  };
 
   console.log(
     'Requesting Ancon metadata creation, awaiting payload signing...',
@@ -65,7 +60,7 @@ const anconPostMetadata = async (
       from: domainNameResponse,
       signature,
       data: payload,
-      topic: `mintIndex`,
+      topic: `@mintIndex`,
     }),
   };
 
@@ -108,32 +103,24 @@ const main = async () => {
     wallet,
     web3,
   );
+
+  console.log('[Instance ANCON]');
+  const Ancon = new AnconProtocol(ethWeb3Prov, wallet.address, anconEndpoint);
+  await Ancon.initialize();
+
   const dagChainReduxHandler = new DAGChainReduxHandler(
     rules,
     wallet.address,
     anconEndpoint,
   );
-
-  console.log('[Instance ANCON]');
-  const Ancon = new AnconProtocol(ethWeb3Prov, wallet.address, anconEndpoint);
-
-  await Ancon.initialize();
-
-  // const netWork = await Ancon.getNetwork();
-  const network = await Ancon.getNetwork();
-  console.log('[ANCON network]', network);
-
-  const { has, name } = await Ancon.getDomainName();
-
-  console.log('[ANCON Domain Name]', name);
-
   const topicRes = await fetch(
-    `${anconEndpoint}v0/topics?topic=uuid:f72f96a3-b215-4d76-ad2d-afdcd61d0a48&from=0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6`,
+    `${anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${wallet.address}`,
   );
+  let firstTimeTopic = true;
 
-  const topicResJson = await topicRes.json();
-
-  console.log(topicResJson);
+  if (topicRes.status == 200) {
+    firstTimeTopic = false;
+  }
 
   setInterval(async () => {
     const currentBlock = await web3.eth.getBlockNumber();
@@ -143,18 +130,46 @@ const main = async () => {
     });
     console.log('\n[FROM]', currentBlock - 3, '[TO]', currentBlock);
     console.log('[Events batch lenght]', allEvents.length);
-    console.log('[Event batch]', allEvents, '\n');
-    allEvents.map((evt) => {
-      dagChainReduxHandler.handleEvent(evt);
+    allEvents.length != 0
+      ? console.log('[Event batch]', allEvents, '\n')
+      : null;
+
+    allEvents.map(async (evt) => {
+      let result, rule;
+      const uuid = evt.returnValues.uri;
+
+      const checkMintTopic = await fetch(
+        `${anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${evt.returnValues.creator}`,
+      );
+
+      if (checkMintTopic.status !== 200) {
+        const checkMintTopicJson = await checkMintTopic.json();
+        const eventContent = checkMintTopicJson.content;
+
+        if (firstTimeTopic) {
+          const uriIndex = { uuid: eventContent };
+          const rawPostRes = await anconPostMetadata(
+            wallet.address,
+            uuid,
+            Ancon.provider,
+            Ancon,
+            uriIndex,
+          );
+
+          const { result, rule } = await dagChainReduxHandler.handleEvent(
+            evt,
+            checkMintTopicJson.content,
+          );
+        }
+      }
+
+      console.log('[EVENT HANDLED RES', result);
     });
   }, 5000);
 
   if (false) {
     // anconPostMetadata(signer.address, '', provider, anconUrl, Ancon);
   }
-
-  // console.log('[NFT contract events]', AnconNFTContract.events);
-  // console.log('[NFTEX contract events]', MarketPlaceContract.events);
 };
 
 main().then();

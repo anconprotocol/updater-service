@@ -23,7 +23,8 @@ export class DAGChainReduxHandler {
     jexl.addFunction('append', append);
   }
 
-  async handleEvent(evmEvent: any): Promise<any> {
+  async handleEvent(evmEvent: any, topicData: any): Promise<any> {
+    console.log('[Handle Event beggining]');
     // Lookup by event
     const rule = this.rules;
     const ruleset = rule[evmEvent.event];
@@ -45,12 +46,8 @@ export class DAGChainReduxHandler {
         const queryAddress = await jexl.eval(r.blockFetchAddress, evmEvent);
         // TODO: Fetch topic + queryAddress eg Waku, Swarm Bee or Ancon protocol
         const dagExample = {};
-        const topicRes = await fetch(
-          `${this.anconEndpoint}v0/topics?topic=${r[0].topicName}&from=${this.from}`,
-        );
 
-        const topicResJson = await topicRes.json();
-        const dagContent = topicResJson.content;
+        const dagContent = topicData;
 
         const context = { dag: dagContent, tx: evmEvent };
         const result = await jexl.eval(r.expression, context);
