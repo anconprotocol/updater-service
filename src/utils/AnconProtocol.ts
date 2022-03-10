@@ -12,7 +12,7 @@ export default class AnconProtocol {
   signer: ethers.providers.JsonRpcSigner;
   postProofCid: string;
   address: string;
-  provider: any;
+  provider: ethers.providers.Web3Provider;
   anconAddress: string;
   xdvnftAdress: string;
   provWeb3: Web3;
@@ -23,7 +23,7 @@ export default class AnconProtocol {
    * needs to be initiliaze with a provider and an address
    */
   constructor(
-    provider: any,
+    provider: ethers.providers.Web3Provider,
     address: string,
     // moniker: string,
     anconEndpoint: string,
