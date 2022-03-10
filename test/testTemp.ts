@@ -13,9 +13,9 @@ import helper from '../src/utils/helper';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import AnconProtocol from '../src/utils/AnconProtocol';
 import { DAGChainReduxHandler } from '../src/redux';
+import fetch from 'node-fetch';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
-require('fetch');
 
 const rules = {
   AddMintInfo: [
@@ -95,7 +95,7 @@ const main = async () => {
   const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
   const url = conf.get('BSC_TESTNET');
   const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
-  const network = await jRPCprovider.getNetwork();
+  // const network = await jRPCprovider.getNetwork();
   const pk = conf.get(`DAG_STORE_KEY`);
   const wallet = new ethers.Wallet(Web3.utils.hexToBytes(pk));
 
@@ -115,16 +115,25 @@ const main = async () => {
   );
 
   console.log('[Instance ANCON]');
-  const Ancon = new AnconProtocol(
-    ethWeb3Prov,
-    wallet.address,
-    'https://tensta.did.pa/v0/',
-  );
+  const Ancon = new AnconProtocol(ethWeb3Prov, wallet.address, anconEndpoint);
 
   await Ancon.initialize();
 
-  const domainName = await Ancon.getDomainName();
-  console.log('[ANCON Domain Name]', domainName);
+  // const netWork = await Ancon.getNetwork();
+  const network = await Ancon.getNetwork();
+  console.log('[ANCON network]', network);
+
+  const { has, name } = await Ancon.getDomainName();
+
+  console.log('[ANCON Domain Name]', name);
+
+  const topicRes = await fetch(
+    `${anconEndpoint}v0/topics?topic=uuid:f72f96a3-b215-4d76-ad2d-afdcd61d0a48&from=0x32A21c1bB6E7C20F547e930b53dAC57f42cd25F6`,
+  );
+
+  const topicResJson = await topicRes.json();
+
+  console.log(topicResJson);
 
   setInterval(async () => {
     const currentBlock = await web3.eth.getBlockNumber();

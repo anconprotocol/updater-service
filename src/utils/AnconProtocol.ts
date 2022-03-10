@@ -2,8 +2,7 @@ import { ethers } from 'ethers';
 import Web3 from 'web3';
 import { XDVNFT__factory } from '../types/ethers-contracts';
 import { AnconProtocol__factory } from '../types/ethers-contracts/factories/AnconProtocol__factory';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('fetch');
+import fetch from 'node-fetch';
 
 declare let window: any;
 
@@ -27,9 +26,9 @@ export default class AnconProtocol {
     provider: any,
     address: string,
     // moniker: string,
-    // anconEndpoint: string,
+    anconEndpoint: string,
     // anconAddress: string,
-    xdvnftAdress: string,
+    // xdvnftAdress: string,
   ) {
     this.provider = provider;
     this.address = address;
@@ -37,9 +36,9 @@ export default class AnconProtocol {
     this.network = '';
     this.postProofCid = '';
     // this.anconAddress = anconAddress;
-    this.xdvnftAdress = xdvnftAdress;
+    // this.xdvnftAdress = xdvnftAdress;
     // this.moniker = moniker;
-    // this.anconEndpoint = anconEndpoint;
+    this.anconEndpoint = anconEndpoint;
   }
 
   async initialize() {
@@ -51,7 +50,7 @@ export default class AnconProtocol {
   async getNetwork() {
     const network = await this.provider.getNetwork();
     this.network = network;
-    console.log('NETWORKI', network);
+    return this.network;
     // await this.getContractAddresses(network);
   }
 
@@ -62,7 +61,7 @@ export default class AnconProtocol {
    */
   async getDidTransaction() {
     const rawDid = await fetch(
-      `${this.anconEndpoint}did/raw:did:ethr:${this.network.name}:${this.address}`,
+      `${this.anconEndpoint}v0/did/raw:did:ethr:${this.network.name}:${this.address}`,
     );
 
     const encodedDid = await rawDid.json();
@@ -73,7 +72,7 @@ export default class AnconProtocol {
 
   async signMessage() {
     const rawDid = await fetch(
-      `${this.anconEndpoint}did/raw:did:ethr:${this.network.name}:${this.address}`,
+      `${this.anconEndpoint}v0/did/raw:did:ethr:${this.network.name}:${this.address}`,
     );
     const encodedDid = await rawDid.json();
     return encodedDid;
@@ -173,7 +172,7 @@ export default class AnconProtocol {
     enrolling?: boolean,
   ) {
     //   url to be called
-    const url = `${this.anconEndpoint}${proofEndpoint}`;
+    const url = `${this.anconEndpoint}v0/${proofEndpoint}`;
 
     // fetch
     const rawResponse = await fetch(url, requestOptions);
@@ -232,7 +231,7 @@ export default class AnconProtocol {
    */
   async getProof(key: string, height: string) {
     const rawResult = await fetch(
-      `${this.anconEndpoint}proof/${key}?height=${height}`,
+      `${this.anconEndpoint}v0/proof/${key}?height=${height}`,
     );
     const result = await rawResult.json();
 
@@ -243,7 +242,7 @@ export default class AnconProtocol {
   }
 
   async fetchDag(id: string) {
-    const rawResponse = await fetch(`${this.anconEndpoint}dagjson/${id}/`);
+    const rawResponse = await fetch(`${this.anconEndpoint}v0/dagjson/${id}/`);
     const response = await rawResponse.json();
     if (response.error != 'cid too short') {
       const cid = await Object?.values(response.contentHash)[0];
@@ -335,7 +334,7 @@ export default class AnconProtocol {
   //   let result = await AnconReader.queryFilter(filter, from);
 
   //   // checking hashes
-  //   const rawLastHash = await fetch(`${this.anconEndpoint}proofs/lasthash`);
+  //   const rawLastHash = await fetch(`${this.anconEndpoint}v0/proofs/lasthash`);
   //   const lasthash = await rawLastHash.json();
   //   const decodedlastHash = ethers.utils.hexlify(
   //     ethers.utils.base64.decode(lasthash.lastHash.hash),
@@ -371,7 +370,7 @@ export default class AnconProtocol {
   //   const did = await this.getDidTransaction();
 
   //   // get the last hash
-  //   const rawLastHash = await fetch(`${this.anconEndpoint}proofs/lasthash`);
+  //   const rawLastHash = await fetch(`${this.anconEndpoint}v0/proofs/lasthash`);
   //   const lasthash = await rawLastHash.json();
   //   const version = lasthash.lastHash.version;
 
@@ -408,16 +407,18 @@ export default class AnconProtocol {
 
   async getDomainName() {
     const rawResponse = await fetch(
-      `${this.anconEndpoint}did/did:ethr:${this.network.name}:${this.address}`,
+      `${this.anconEndpoint}v0/did/did:ethr:${this.network.name}:${this.address}`,
     );
     if (rawResponse.status === 400) {
-      return false;
+      return { has: false, name: null };
     }
-    return true;
+    return { has: true, name: `ethr:${this.network.name}:${this.address}` };
   }
 
   async getMetadata(cid: string, address: string) {
-    const rawData = await fetch(`${this.anconEndpoint}dag/${cid}/contentHash`);
+    const rawData = await fetch(
+      `${this.anconEndpoint}v0/dag/${cid}/contentHash`,
+    );
     const data = await rawData.json();
 
     data['root'] = await await Object?.values(data.root)[0];

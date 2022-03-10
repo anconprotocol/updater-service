@@ -36,7 +36,7 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/schedule": "^1.0.2",
-    "axios": "^0.24.0",
+    "@types/node-fetch": "^2.6.1",
     "ethers": "^5.5.2",
     "fetch": "^1.1.0",
     "jexl": "^2.3.0",
