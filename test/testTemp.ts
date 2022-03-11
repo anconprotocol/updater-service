@@ -167,12 +167,7 @@ const main = async () => {
 
         if (firstTimeTopic) {
           //If there is no topic made, post a metadata with the first uriIndexObject
-          const uriIndexObject = { uuid: uuid, content: eventContent };
-
-          // const { result, rule } = await dagChainReduxHandler.handleEvent(
-          //   evt,
-          //   checkMintTopicJson.content,
-          // );
+          const uriIndexObject = { [uuid]: eventContent };
 
           const rawPostRes = await anconPostMetadata(
             wallet.address,
