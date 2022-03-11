@@ -11,7 +11,7 @@ import Web3 from 'web3';
 import { ConfigService } from '@nestjs/config';
 import helper from '../src/utils/helper';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import AnconProtocol from '../src/utils/AnconProtocol';
+import AnconProtocol, { sleep } from '../src/utils/AnconProtocol';
 import { DAGChainReduxHandler } from '../src/redux';
 import fetch from 'node-fetch';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -121,8 +121,10 @@ const main = async () => {
   if (topicRes.status == 200) {
     firstTimeTopic = false;
   }
+  console.log('[First Time Topic is]', firstTimeTopic, '\n');
 
   setInterval(async () => {
+    //Monitoring the chain
     const currentBlock = await web3.eth.getBlockNumber();
     const allEvents = await AnconNFTContract.getPastEvents('AddMintInfo', {
       toBlock: currentBlock,
@@ -138,16 +140,19 @@ const main = async () => {
       let result, rule;
       const uuid = evt.returnValues.uri;
 
+      //Wait for the metadata to update
+      await sleep(15000);
+
       const checkMintTopic = await fetch(
         `${anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${evt.returnValues.creator}`,
       );
 
-      if (checkMintTopic.status !== 200) {
+      if (checkMintTopic.status === 200) {
         const checkMintTopicJson = await checkMintTopic.json();
         const eventContent = checkMintTopicJson.content;
 
         if (firstTimeTopic) {
-          const uriIndex = { uuid: eventContent };
+          const uriIndex = { uuid: uuid, content: eventContent };
           const rawPostRes = await anconPostMetadata(
             wallet.address,
             uuid,
