@@ -23,7 +23,11 @@ export class DAGChainReduxHandler {
     jexl.addFunction('append', append);
   }
 
-  async handleEvent(evmEvent: any, topicData: any): Promise<any> {
+  async handleEvent(
+    evmEvent: any,
+    topicContent: any,
+    previousIndexContent: any,
+  ): Promise<any> {
     console.log('[Handle Event beggining]');
     // Lookup by event
     const rule = this.rules;
@@ -36,26 +40,24 @@ export class DAGChainReduxHandler {
     expectedRules = await ruleset.filter(async (r) => {
       return await jexl.eval(r.condition, evmEvent);
     });
-
+    let output;
     // Lookup by DAG block condition, note this could be a single liner
     if (expectedRules.length > 0) {
       expectedRules = await expectedRules.filter(async (r) => {
         return (await jexl.eval(r.blockFetchCondition, evmEvent)) === true;
       });
-      expectedRules.map(async (r) => {
+
+      output = expectedRules.map(async (r) => {
         const queryAddress = await jexl.eval(r.blockFetchAddress, evmEvent);
-        // TODO: Fetch topic + queryAddress eg Waku, Swarm Bee or Ancon protocol
-        const dagExample = {};
 
-        const dagContent = topicData;
+        const pastDagContent = previousIndexContent;
 
-        const context = { dag: dagContent, tx: evmEvent };
+        const context = { dag: pastDagContent, newData: topicContent };
         const result = await jexl.eval(r.expression, context);
         // TODO: Mutate topic + Sign
-        return { result: result, rule: r };
+        return result;
       });
-
-      return true; // TODO: return result
     }
+    return Promise.all(output);
   }
 }
