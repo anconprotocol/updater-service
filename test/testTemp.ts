@@ -48,6 +48,7 @@ const anconPostMetadata = async (
   );
 
   // sign the message
+  //Current error in signature
   const signature = await signer.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(payload))),
   );
@@ -113,12 +114,12 @@ const main = async () => {
     wallet.address,
     anconEndpoint,
   );
-  const topicRes = await fetch(
+  const indexTopicRes = await fetch(
     `${anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${wallet.address}`,
   );
   let firstTimeTopic = true;
 
-  if (topicRes.status == 200) {
+  if (indexTopicRes.status == 200) {
     firstTimeTopic = false;
   }
   console.log('[First Time Topic is]', firstTimeTopic, '\n');
@@ -148,19 +149,40 @@ const main = async () => {
       );
 
       if (checkMintTopic.status === 200) {
+        console.log(
+          '[Got one event with uuid: ',
+          uuid,
+          ' Succesfully registered... proceeding to index]\n',
+        );
         const checkMintTopicJson = await checkMintTopic.json();
         const eventContent = checkMintTopicJson.content;
 
         if (firstTimeTopic) {
-          const uriIndex = { uuid: uuid, content: eventContent };
+          //If there is no topic made, post a metadata with the first uriIndexObject
+          const uriIndexObject = { uuid: uuid, content: eventContent };
+
+          // const { result, rule } = await dagChainReduxHandler.handleEvent(
+          //   evt,
+          //   checkMintTopicJson.content,
+          // );
+
           const rawPostRes = await anconPostMetadata(
             wallet.address,
             uuid,
             Ancon.provider,
             Ancon,
-            uriIndex,
+            uriIndexObject,
           );
 
+          const updatedIndexTopicRes = await fetch(
+            `${anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${wallet.address}`,
+          );
+
+          const updatedIndexTopicJson = await updatedIndexTopicRes.json();
+        } else {
+          const indexTopicJson = await indexTopicRes.json();
+          //indexTopicJson.content
+          //ancon update metadata
           const { result, rule } = await dagChainReduxHandler.handleEvent(
             evt,
             checkMintTopicJson.content,
