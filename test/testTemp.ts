@@ -150,7 +150,7 @@ const main = async () => {
       const uuid = evt.returnValues.uri;
 
       //Wait for the metadata to update
-      await sleep(15000);
+      await sleep(10000);
 
       const checkMintTopic = await fetch(
         `${anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${evt.returnValues.creator}`,
@@ -187,16 +187,33 @@ const main = async () => {
           const indexTopicJson = await indexTopicRes.json();
           //indexTopicJson.content
           //ancon update metadata
-          const { result, rule } = await dagChainReduxHandler.handleEvent(
+          const [result] = await dagChainReduxHandler.handleEvent(
             evt,
             checkMintTopicJson.content,
+            indexTopicJson.content,
           );
+
+          const rawPostRes = await anconPostMetadata(
+            wallet.address,
+            uuid,
+            Ancon.provider,
+            Ancon,
+            wallet,
+            result,
+          );
+          rawPostRes.contentCid != 'error'
+            ? console.log(
+                '[Event Transform Succesfully Posted]',
+                rawPostRes.contentCid,
+              )
+            : console.log(
+                '[Event Transform Post Failed]',
+                rawPostRes.contentCid,
+              );
         }
       }
-
-      console.log('[EVENT HANDLED RES', result);
     });
-  }, 5000);
+  }, 10000);
 
   if (false) {
     // anconPostMetadata(signer.address, '', provider, anconUrl, Ancon);
