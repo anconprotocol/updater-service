@@ -35,10 +35,10 @@ const anconPostMetadata = async (
   _uuid: string,
   _web3Prov: ethers.providers.Web3Provider,
   Ancon: AnconProtocol,
+  _wallet: ethers.Wallet,
   payload: any,
 ) => {
   //user Ancon ethers instance
-  const signer = await _web3Prov.getSigner();
   const network = await _web3Prov.getNetwork();
 
   const domainNameResponse = `did:ethr:${network.name}:${_address}`;
@@ -49,7 +49,7 @@ const anconPostMetadata = async (
 
   // sign the message
   //Current error in signature
-  const signature = await signer.signMessage(
+  const signature = await _wallet.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(payload))),
   );
 
@@ -100,13 +100,13 @@ const main = async () => {
   // const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
   // const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
   // const network = await jRPCprovider.getNetwork();
-  const wallet = new ethers.Wallet(Web3.utils.hexToBytes(pk));
-
-  const web3 = instanceWeb3WithAccount(url, pk);
+  const web3 = instanceWeb3WithAccount(url, pk.split('0x')[1]);
 
   const ethWeb3Prov = new ethers.providers.Web3Provider(
     web3.currentProvider as any,
   );
+
+  const wallet = new ethers.Wallet(Web3.utils.hexToBytes(pk), ethWeb3Prov);
 
   const { AnconNFTContract, MarketPlaceContract } = helper.getContracts(
     wallet,
@@ -179,6 +179,7 @@ const main = async () => {
             uuid,
             Ancon.provider,
             Ancon,
+            wallet,
             uriIndexObject,
           );
 
