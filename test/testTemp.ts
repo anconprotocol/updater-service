@@ -83,19 +83,27 @@ const anconPostMetadata = async (
   return await PostRequest();
 };
 
+const instanceWeb3WithAccount = (_url: string, pk: string) => {
+  const web3 = new Web3(_url);
+  const web3Account = web3.eth.accounts.privateKeyToAccount(pk);
+  web3.eth.accounts.wallet.add(web3Account);
+  return web3;
+};
+
 const main = async () => {
   const conf = new ConfigService();
 
   const anconEndpoint = conf.get('ANCON_URL_TENSTA');
-
-  const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
-  const url = conf.get('BSC_TESTNET');
-  const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
-  // const network = await jRPCprovider.getNetwork();
   const pk = conf.get(`DAG_STORE_KEY`);
+  const url = conf.get('BSC_TESTNET');
+
+  // const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
+  // const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
+  // const network = await jRPCprovider.getNetwork();
   const wallet = new ethers.Wallet(Web3.utils.hexToBytes(pk));
 
-  const web3 = new Web3(url);
+  const web3 = instanceWeb3WithAccount(url, pk);
+
   const ethWeb3Prov = new ethers.providers.Web3Provider(
     web3.currentProvider as any,
   );
