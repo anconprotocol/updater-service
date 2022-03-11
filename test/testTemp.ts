@@ -1,16 +1,7 @@
 import { ethers } from 'ethers';
-import {
-  arrayify,
-  base64,
-  formatBytes32String,
-  hexlify,
-  keccak256,
-  toUtf8Bytes,
-} from 'ethers/lib/utils';
 import Web3 from 'web3';
 import { ConfigService } from '@nestjs/config';
 import helper from '../src/utils/helper';
-import { JsonRpcProvider } from '@ethersproject/providers';
 import AnconProtocol, { sleep } from '../src/utils/AnconProtocol';
 import { DAGChainReduxHandler } from '../src/redux';
 import fetch from 'node-fetch';
@@ -97,9 +88,6 @@ const main = async () => {
   const pk = conf.get(`DAG_STORE_KEY`);
   const url = conf.get('BSC_TESTNET');
 
-  // const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
-  // const jRPCprovider = new ethers.providers.JsonRpcProvider(url);
-  // const network = await jRPCprovider.getNetwork();
   const web3 = instanceWeb3WithAccount(url, pk.split('0x')[1]);
 
   const ethWeb3Prov = new ethers.providers.Web3Provider(
@@ -185,7 +173,6 @@ const main = async () => {
           const updatedIndexTopicJson = await updatedIndexTopicRes.json();
         } else {
           const indexTopicJson = await indexTopicRes.json();
-          //indexTopicJson.content
           //ancon update metadata
           const [result] = await dagChainReduxHandler.handleEvent(
             evt,
@@ -214,10 +201,6 @@ const main = async () => {
       }
     });
   }, 10000);
-
-  if (false) {
-    // anconPostMetadata(signer.address, '', provider, anconUrl, Ancon);
-  }
 };
 
 main().then();
