@@ -22,7 +22,7 @@ const rules = {
     {
       name: 'concatTransactionHash',
       condition: `returnValues.creator != null`,
-      expression: `assign(dag, append('txHash', tx.transactionHash))`,
+      expression: `assign(dag, append(newData.uuid, newData))`,
       blockFetchCondition: 'returnValues.uri != null',
       blockFetchAddress: 'returnValues.creator',
       topicName: '@mintIndex',
