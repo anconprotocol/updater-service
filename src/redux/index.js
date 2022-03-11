@@ -66,13 +66,14 @@ var DAGChainReduxHandler = /** @class */ (function () {
         jexl.addFunction('assign', assign);
         jexl.addFunction('append', append);
     }
-    DAGChainReduxHandler.prototype.handleEvent = function (evmEvent) {
+    DAGChainReduxHandler.prototype.handleEvent = function (evmEvent, topicContent, previousIndexContent) {
         return __awaiter(this, void 0, void 0, function () {
-            var rule, ruleset, expectedRules;
+            var rule, ruleset, expectedRules, output;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        console.log('[Handle Event beggining]');
                         rule = this.rules;
                         ruleset = rule[evmEvent.event];
                         if (ruleset === null)
@@ -99,32 +100,25 @@ var DAGChainReduxHandler = /** @class */ (function () {
                             }); })];
                     case 2:
                         expectedRules = _a.sent();
-                        expectedRules.map(function (r) { return __awaiter(_this, void 0, void 0, function () {
-                            var queryAddress, dagExample, topicRes, topicResJson, dagContent, context, result;
+                        output = expectedRules.map(function (r) { return __awaiter(_this, void 0, void 0, function () {
+                            var queryAddress, pastDagContent, context, result;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, jexl.eval(r.blockFetchAddress, evmEvent)];
                                     case 1:
                                         queryAddress = _a.sent();
-                                        dagExample = {};
-                                        return [4 /*yield*/, fetch("".concat(this.anconEndpoint, "v0/topics?topic=").concat(r[0].topicName, "&from=").concat(this.from))];
-                                    case 2:
-                                        topicRes = _a.sent();
-                                        return [4 /*yield*/, topicRes.json()];
-                                    case 3:
-                                        topicResJson = _a.sent();
-                                        dagContent = topicResJson.content;
-                                        context = { dag: dagContent, tx: evmEvent };
+                                        pastDagContent = previousIndexContent;
+                                        context = { dag: pastDagContent, newData: topicContent };
                                         return [4 /*yield*/, jexl.eval(r.expression, context)];
-                                    case 4:
+                                    case 2:
                                         result = _a.sent();
                                         // TODO: Mutate topic + Sign
-                                        return [2 /*return*/, { result: result, rule: r }];
+                                        return [2 /*return*/, result];
                                 }
                             });
                         }); });
-                        return [2 /*return*/, true]; // TODO: return result
-                    case 3: return [2 /*return*/];
+                        _a.label = 3;
+                    case 3: return [2 /*return*/, Promise.all(output)];
                 }
             });
         });

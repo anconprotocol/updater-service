@@ -37,11 +37,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var ethers_1 = require("ethers");
-var utils_1 = require("ethers/lib/utils");
 var web3_1 = require("web3");
 var config_1 = require("@nestjs/config");
 var helper_1 = require("../src/utils/helper");
+var AnconProtocol_1 = require("../src/utils/AnconProtocol");
 var redux_1 = require("../src/redux");
+var node_fetch_1 = require("node-fetch");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 var rules = {
@@ -49,31 +50,24 @@ var rules = {
         {
             name: 'concatTransactionHash',
             condition: "returnValues.creator != null",
-            expression: "assign(dag, append('txHash', tx.transactionHash))",
+            expression: "assign(dag, append(newData.uuid, newData))",
             blockFetchCondition: 'returnValues.uri != null',
             blockFetchAddress: 'returnValues.creator',
             topicName: '@mintIndex'
         },
     ]
 };
-var anconPostMetadata = function (_address, _uuid, _ethrProv, _anconUrl, Ancon) { return __awaiter(void 0, void 0, void 0, function () {
-    var signer, network, domainNameResponse, payload, signature, requestOptions, PostRequest;
+var anconPostMetadata = function (_address, _uuid, _web3Prov, Ancon, _wallet, payload) { return __awaiter(void 0, void 0, void 0, function () {
+    var network, domainNameResponse, signature, requestOptions, PostRequest;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, _ethrProv.getSigner()];
+            case 0: return [4 /*yield*/, _web3Prov.getNetwork()];
             case 1:
-                signer = _a.sent();
-                return [4 /*yield*/, _ethrProv.getNetwork()];
-            case 2:
                 network = _a.sent();
                 domainNameResponse = "did:ethr:".concat(network.name, ":").concat(_address);
-                payload = {
-                    data1: 'data1',
-                    data2: 'data2'
-                };
                 console.log('Requesting Ancon metadata creation, awaiting payload signing...');
-                return [4 /*yield*/, signer.signMessage(ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.toUtf8Bytes(JSON.stringify(payload))))];
-            case 3:
+                return [4 /*yield*/, _wallet.signMessage(ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.toUtf8Bytes(JSON.stringify(payload))))];
+            case 2:
                 signature = _a.sent();
                 requestOptions = {
                     method: 'POST',
@@ -83,7 +77,7 @@ var anconPostMetadata = function (_address, _uuid, _ethrProv, _anconUrl, Ancon) 
                         from: domainNameResponse,
                         signature: signature,
                         data: payload,
-                        topic: "mintIndex"
+                        topic: "@mintIndex"
                     })
                 };
                 PostRequest = function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -105,37 +99,43 @@ var anconPostMetadata = function (_address, _uuid, _ethrProv, _anconUrl, Ancon) 
                     });
                 }); };
                 return [4 /*yield*/, PostRequest()];
-            case 4: return [2 /*return*/, _a.sent()];
+            case 3: return [2 /*return*/, _a.sent()];
         }
     });
 }); };
+var instanceWeb3WithAccount = function (_url, pk) {
+    var web3 = new web3_1["default"](_url);
+    var web3Account = web3.eth.accounts.privateKeyToAccount(pk);
+    web3.eth.accounts.wallet.add(web3Account);
+    return web3;
+};
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var conf, anconEndpoint, moniker, url, jRPCprovider, network, pk, signer, web3, _a, AnconNFTContract, MarketPlaceContract, dagChainReduxHandler;
+    var conf, anconEndpoint, pk, url, web3, ethWeb3Prov, wallet, _a, AnconNFTContract, MarketPlaceContract, Ancon, dagChainReduxHandler, indexTopicRes, firstTimeTopic;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 conf = new config_1.ConfigService();
                 anconEndpoint = conf.get('ANCON_URL_TENSTA');
-                moniker = (0, utils_1.keccak256)((0, utils_1.toUtf8Bytes)(conf.get("DAG_STORE_MONIKER")));
-                url = conf.get('BSC_TESTNET');
-                jRPCprovider = new ethers_1.ethers.providers.JsonRpcProvider(url);
-                return [4 /*yield*/, jRPCprovider.getNetwork()];
-            case 1:
-                network = _b.sent();
                 pk = conf.get("DAG_STORE_KEY");
-                signer = new ethers_1.ethers.Wallet(web3_1["default"].utils.hexToBytes(pk));
-                web3 = new web3_1["default"](url);
-                _a = helper_1["default"].getContracts(signer, web3), AnconNFTContract = _a.AnconNFTContract, MarketPlaceContract = _a.MarketPlaceContract;
-                dagChainReduxHandler = new redux_1.DAGChainReduxHandler(rules, signer.address, anconEndpoint);
+                url = conf.get('BSC_TESTNET');
+                web3 = instanceWeb3WithAccount(url, pk.split('0x')[1]);
+                ethWeb3Prov = new ethers_1.ethers.providers.Web3Provider(web3.currentProvider);
+                wallet = new ethers_1.ethers.Wallet(web3_1["default"].utils.hexToBytes(pk), ethWeb3Prov);
+                _a = helper_1["default"].getContracts(wallet, web3), AnconNFTContract = _a.AnconNFTContract, MarketPlaceContract = _a.MarketPlaceContract;
                 console.log('[Instance ANCON]');
-                // const Ancon = new AnconProtocol(
-                //   null,
-                //   signer.address,
-                //   '',
-                //   'https://tensta.did.pa/v0/',
-                //   '',
-                //   '',
-                // );
+                Ancon = new AnconProtocol_1["default"](ethWeb3Prov, wallet.address, anconEndpoint);
+                return [4 /*yield*/, Ancon.initialize()];
+            case 1:
+                _b.sent();
+                dagChainReduxHandler = new redux_1.DAGChainReduxHandler(rules, wallet.address, anconEndpoint);
+                return [4 /*yield*/, (0, node_fetch_1["default"])("".concat(anconEndpoint, "v0/topics?topic=").concat(rules.AddMintInfo[0].topicName, "&from=").concat(wallet.address))];
+            case 2:
+                indexTopicRes = _b.sent();
+                firstTimeTopic = true;
+                if (indexTopicRes.status == 200) {
+                    firstTimeTopic = false;
+                }
+                console.log('[First Time Topic is]', firstTimeTopic, '\n');
                 setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
                     var currentBlock, allEvents;
                     return __generator(this, function (_a) {
@@ -149,15 +149,65 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
                                     })];
                             case 2:
                                 allEvents = _a.sent();
-                                console.log('[BLOCKS]', currentBlock);
-                                console.log('[All events]', allEvents);
-                                allEvents.map(function (evt) {
-                                    dagChainReduxHandler.handleEvent(evt);
-                                });
+                                console.log('\n[FROM]', currentBlock - 3, '[TO]', currentBlock);
+                                console.log('[Events batch lenght]', allEvents.length);
+                                allEvents.length != 0
+                                    ? console.log('[Event batch]', allEvents, '\n')
+                                    : null;
+                                allEvents.map(function (evt) { return __awaiter(void 0, void 0, void 0, function () {
+                                    var result, rule, uuid, checkMintTopic, checkMintTopicJson, eventContent, uriIndexObject, rawPostRes, updatedIndexTopicRes, updatedIndexTopicJson, indexTopicJson, result_1, rawPostRes;
+                                    var _a;
+                                    return __generator(this, function (_b) {
+                                        switch (_b.label) {
+                                            case 0:
+                                                uuid = evt.returnValues.uri;
+                                                //Wait for the metadata to update
+                                                return [4 /*yield*/, (0, AnconProtocol_1.sleep)(10000)];
+                                            case 1:
+                                                //Wait for the metadata to update
+                                                _b.sent();
+                                                return [4 /*yield*/, (0, node_fetch_1["default"])("".concat(anconEndpoint, "v0/topics?topic=uuid:").concat(uuid, "&from=").concat(evt.returnValues.creator))];
+                                            case 2:
+                                                checkMintTopic = _b.sent();
+                                                if (!(checkMintTopic.status === 200)) return [3 /*break*/, 11];
+                                                console.log('[Got one event with uuid: ', uuid, ' Succesfully registered... proceeding to index]\n');
+                                                return [4 /*yield*/, checkMintTopic.json()];
+                                            case 3:
+                                                checkMintTopicJson = _b.sent();
+                                                eventContent = checkMintTopicJson.content;
+                                                if (!firstTimeTopic) return [3 /*break*/, 7];
+                                                uriIndexObject = (_a = {}, _a[uuid] = eventContent, _a);
+                                                return [4 /*yield*/, anconPostMetadata(wallet.address, uuid, Ancon.provider, Ancon, wallet, uriIndexObject)];
+                                            case 4:
+                                                rawPostRes = _b.sent();
+                                                return [4 /*yield*/, (0, node_fetch_1["default"])("".concat(anconEndpoint, "v0/topics?topic=").concat(rules.AddMintInfo[0].topicName, "&from=").concat(wallet.address))];
+                                            case 5:
+                                                updatedIndexTopicRes = _b.sent();
+                                                return [4 /*yield*/, updatedIndexTopicRes.json()];
+                                            case 6:
+                                                updatedIndexTopicJson = _b.sent();
+                                                return [3 /*break*/, 11];
+                                            case 7: return [4 /*yield*/, indexTopicRes.json()];
+                                            case 8:
+                                                indexTopicJson = _b.sent();
+                                                return [4 /*yield*/, dagChainReduxHandler.handleEvent(evt, checkMintTopicJson.content, indexTopicJson.content)];
+                                            case 9:
+                                                result_1 = (_b.sent())[0];
+                                                return [4 /*yield*/, anconPostMetadata(wallet.address, uuid, Ancon.provider, Ancon, wallet, result_1)];
+                                            case 10:
+                                                rawPostRes = _b.sent();
+                                                rawPostRes.contentCid != 'error'
+                                                    ? console.log('[Event Transform Succesfully Posted]', rawPostRes.contentCid)
+                                                    : console.log('[Event Transform Post Failed]', rawPostRes.contentCid);
+                                                _b.label = 11;
+                                            case 11: return [2 /*return*/];
+                                        }
+                                    });
+                                }); });
                                 return [2 /*return*/];
                         }
                     });
-                }); }, 5000);
+                }); }, 10000);
                 if (false) {
                     // anconPostMetadata(signer.address, '', provider, anconUrl, Ancon);
                 }
