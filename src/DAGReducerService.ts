@@ -31,6 +31,9 @@ const rules = {
   ],
 };
 
+/**
+  Post topic index list
+**/
 const anconPostMetadata = async (
   _address,
   _uuid: string,
@@ -63,6 +66,70 @@ const anconPostMetadata = async (
       signature,
       data: payload,
       topic: `@mintIndex`,
+    }),
+  };
+
+  // UPLOADING the metadata
+  const PostRequest = async () => {
+    console.log(
+      'Requesting Ancon metadata creation, posting Ancon metadata...',
+    );
+
+    const metadataPost = await Ancon.postProof('dagjson', requestOptions);
+
+    // // returns the metadata cid
+    console.log('metadata', metadataPost);
+    const id = await metadataPost.proofCid;
+
+    return metadataPost;
+  };
+
+  return await PostRequest();
+};
+
+/**
+  Post metadata with updated mint info
+**/
+const anconUpdateMetadata = async (
+  _address,
+  _uuid: string,
+  _web3Prov: ethers.providers.Web3Provider,
+  Ancon: AnconProtocol,
+  _wallet: ethers.Wallet,
+  oldPayload: any,
+  _blockchainTxHash: string,
+  _blockchainTokenId: string,
+) => {
+  //user Ancon ethers instance
+  const network = await _web3Prov.getNetwork();
+
+  const domainNameResponse = `did:ethr:${network.name}:${_address}`;
+
+  console.log(
+    'Requesting Ancon metadata creation, awaiting payload signing...',
+  );
+
+  const putPayload = {
+    ...oldPayload,
+    blockchainTxHash: _blockchainTxHash,
+    blockchainTokenId: _blockchainTokenId,
+  };
+
+  // sign the message
+  //Current error in signature
+  const signature = await _wallet.signMessage(
+    ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(putPayload))),
+  );
+
+  const requestOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      path: '/',
+      from: domainNameResponse,
+      signature,
+      data: putPayload,
+      topic: `uuid:${_uuid}`,
     }),
   };
 
@@ -190,8 +257,7 @@ export class DAGReducerService {
       let result, rule;
       const uuid = evt.returnValues.uri;
 
-      //Wait for the metadata to update
-      await sleep(10000);
+      //Checking the user generated topic without blockchain data
 
       const checkMintTopic = await fetch(
         `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${evt.returnValues.creator}`,
@@ -201,14 +267,32 @@ export class DAGReducerService {
         console.log(
           '[Got one event with uuid: ',
           uuid,
-          ' Succesfully registered... proceeding to index]\n',
+          ' Succesfully registered... proceeding to update]\n',
         );
         const checkMintTopicJson = await checkMintTopic.json();
         const eventContent = checkMintTopicJson.content;
 
+        //Updating the metadata with indexer address generated topic
+        await anconUpdateMetadata(
+          this.wallet.address,
+          uuid,
+          this.Ancon.provider,
+          this.Ancon,
+          this.wallet,
+          eventContent,
+          evt.transactionHash,
+          evt.returnValues.tokenId,
+        );
+
+        const updatedRes = await fetch(
+          `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${this.wallet.address}`,
+        );
+
+        const updatedResJson = await updatedRes.json();
+
         if (this.firstTimeTopic) {
           //If there is no topic made, post a metadata with the first uriIndexObject
-          const uriIndexObject = { [uuid]: eventContent };
+          const uriIndexObject = { [uuid]: updatedResJson.content };
 
           const rawPostRes = await anconPostMetadata(
             this.wallet.address,
@@ -226,10 +310,10 @@ export class DAGReducerService {
           const updatedIndexTopicJson = await updatedIndexTopicRes.json();
         } else {
           const indexTopicJson = await indexTopicRes.json();
-          //ancon update metadata
+          //ancon update topic list
           const [result] = await this.dagChainReduxHandler.handleEvent(
             evt,
-            checkMintTopicJson.content,
+            updatedResJson.content,
             indexTopicJson.content,
           );
 
