@@ -1,8 +1,5 @@
-import { ethers } from 'ethers';
-import Web3 from 'web3';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const jexl = require('jexl');
-import fetch from 'node-fetch';
 
 const assign = (val1, val2) => {
   return { ...val1, ...val2 };
