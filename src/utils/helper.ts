@@ -2,8 +2,9 @@
 import Web3 from 'web3';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
-const AnconNFT = require('../contracts/AnconNFT.sol/AnconNFT.json');
-const NFTEX = require('../contracts/NFTEX.sol/NFTEX.json');
+import { AbiItem } from 'web3-utils';
+import NFTEX from '../contracts/NFTEX.sol/NFTEX.json';
+import AnconNFT from '../contracts/AnconNFT.sol/AnconNFT.json';
 require('dotenv').config();
 
 class helper {
@@ -16,13 +17,13 @@ class helper {
     const anconNFTContractAddress = conf.get(`AnconTestNFTAddress`);
     console.log('[anconNFTContractAddress]', anconNFTContractAddress);
     const _anconNFTContract = new web3.eth.Contract(
-      AnconNFT.abi,
+      AnconNFT.abi as unknown as AbiItem,
       anconNFTContractAddress,
     );
     const marketPlaceContractAddress = conf.get(`MarketplaceAddress`);
     console.log('[marketPlaceContractAddress]', marketPlaceContractAddress);
     const _marketPlaceContract = new web3.eth.Contract(
-      NFTEX.abi,
+      NFTEX.abi as unknown as AbiItem,
       marketPlaceContractAddress,
     );
 
