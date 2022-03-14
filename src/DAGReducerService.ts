@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import axios from 'axios';
-import { AnconProtocol__factory } from './types/ethers-contracts/factories/AnconProtocol__factory';
 import { BigNumber, ethers, providers } from 'ethers';
+import AnconProtocol, { sleep } from './utils/AnconProtocol';
 import Web3 from 'web3';
 import {
   arrayify,
@@ -17,6 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import helper from './utils/helper';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
+
 const rules = {
   AddMintInfo: [
     {
@@ -103,6 +103,7 @@ export class DAGReducerService {
   private wallet;
   private MarketPlaceContract;
   private firstTimeTopic;
+  private dagChainReduxHandler;
 
   constructor() {
     const conf = new ConfigService();
@@ -137,7 +138,7 @@ export class DAGReducerService {
       this.anconEndpoint,
     );
 
-    const dagChainReduxHandler = new DAGChainReduxHandler(
+    this.dagChainReduxHandler = new DAGChainReduxHandler(
       rules,
       this.wallet.address,
       this.anconEndpoint,
@@ -158,44 +159,98 @@ export class DAGReducerService {
 
   @Cron(process.env.REDUCER_INTERVAL)
   async handleAllEvents() {
-    const dagChainReduxHandler = new DAGChainReduxHandler();
-    const conf = new ConfigService();
-    this.logger.debug('Called every 30 minutes');
+    await this.Ancon.initialize();
 
-    const anconUrl = conf.get('ANCON_URL_TENSTA');
-    const moniker = keccak256(toUtf8Bytes(conf.get(`DAG_STORE_MONIKER`)));
-    const url = conf.get('BSC_TESTNET');
-    const provider = new ethers.providers.JsonRpcProvider(url);
-    const pk = conf.get(`DAG_STORE_KEY`);
-    const signer = new ethers.Wallet(Web3.utils.hexToBytes(pk));
-
-    //Instantiate web3
-
-    const web3 = new Web3(signer.provider as any);
-
-    //Instantiate anconNFT & NFTEX contract
-    // let nftContract, marketContract;
-    const { AnconNFTContract, MarketPlaceContract } = helper.getContracts(
-      signer,
-      web3,
+    //Checking if insdex topic exist
+    const indexTopicRes = await fetch(
+      `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
     );
+    this.firstTimeTopic = true;
 
-    // AnconNFTContract.events
+    if (indexTopicRes.status == 200) {
+      this.firstTimeTopic = false;
+    }
 
-    // TODO: Listener getAllEvents
+    console.log('[First Time Topic is]', this.firstTimeTopic, '\n');
 
-    // for (let index = currentBlock; index > firstBlockNumber; index -= 4999) {
-    //   responseMintedNFT = await nftContract.getPastEvents("AddMintInfo", {
-    //     toBlock: index,
-    //     fromBlock: index - 4999,
-    //   });
+    //Monitoring the chain
+    const currentBlock = await this.web3.eth.getBlockNumber();
+    const allEvents = await this.AnconNFTContract.getPastEvents('AddMintInfo', {
+      toBlock: currentBlock,
+      fromBlock: currentBlock - 3,
+    });
+    console.log('\n[FROM]', currentBlock - 3, '[TO]', currentBlock);
+    console.log('[Events batch lenght]', allEvents.length);
+    allEvents.length != 0
+      ? console.log('[Event batch]', allEvents, '\n')
+      : null;
 
-    // TODO: Fetch JEXL smart contracts by CID hash
-    const rules = {};
-    const evt = {};
-    dagChainReduxHandler.handleEvent(rules, evt);
+    allEvents.map(async (evt) => {
+      let result, rule;
+      const uuid = evt.returnValues.uri;
 
-    // TODO: Write DAG
-    // TODO: PING relayer
+      //Wait for the metadata to update
+      await sleep(10000);
+
+      const checkMintTopic = await fetch(
+        `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${evt.returnValues.creator}`,
+      );
+
+      if (checkMintTopic.status === 200) {
+        console.log(
+          '[Got one event with uuid: ',
+          uuid,
+          ' Succesfully registered... proceeding to index]\n',
+        );
+        const checkMintTopicJson = await checkMintTopic.json();
+        const eventContent = checkMintTopicJson.content;
+
+        if (this.firstTimeTopic) {
+          //If there is no topic made, post a metadata with the first uriIndexObject
+          const uriIndexObject = { [uuid]: eventContent };
+
+          const rawPostRes = await anconPostMetadata(
+            this.wallet.address,
+            uuid,
+            this.Ancon.provider,
+            this.Ancon,
+            this.wallet,
+            uriIndexObject,
+          );
+
+          const updatedIndexTopicRes = await fetch(
+            `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
+          );
+
+          const updatedIndexTopicJson = await updatedIndexTopicRes.json();
+        } else {
+          const indexTopicJson = await indexTopicRes.json();
+          //ancon update metadata
+          const [result] = await this.dagChainReduxHandler.handleEvent(
+            evt,
+            checkMintTopicJson.content,
+            indexTopicJson.content,
+          );
+
+          const rawPostRes = await anconPostMetadata(
+            this.wallet.address,
+            uuid,
+            this.Ancon.provider,
+            this.Ancon,
+            this.wallet,
+            result,
+          );
+          rawPostRes.contentCid != 'error'
+            ? console.log(
+                '[Event Transform Succesfully Posted]',
+                rawPostRes.contentCid,
+              )
+            : console.log(
+                '[Event Transform Post Failed]',
+                rawPostRes.contentCid,
+              );
+        }
+      }
+    });
   }
 }
