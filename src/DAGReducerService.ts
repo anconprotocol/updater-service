@@ -14,6 +14,7 @@ import {
 import { DAGChainReduxHandler } from './redux';
 import { ConfigService } from '@nestjs/config';
 import helper from './utils/helper';
+import fetch from 'node-fetch';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 
@@ -157,7 +158,7 @@ export class DAGReducerService {
     // console.log('[First Time Topic is]', this.firstTimeTopic, '\n');
   }
 
-  @Cron(process.env.REDUCER_INTERVAL)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async handleAllEvents() {
     await this.Ancon.initialize();
 
