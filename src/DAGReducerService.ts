@@ -290,6 +290,15 @@ export class DAGReducerService {
 
         const updatedResJson = await updatedRes.json();
 
+        if (updatedRes.status == 200) {
+          console.log(
+            '[Event Mint Metadata Succesfully Updated]',
+            updatedResJson.content.uuid,
+          );
+        } else {
+          console.log('[Event Transform Post Failed]', updatedRes.status);
+        }
+
         if (this.firstTimeTopic) {
           //If there is no topic made, post a metadata with the first uriIndexObject
           const uriIndexObject = { [uuid]: updatedResJson.content };
