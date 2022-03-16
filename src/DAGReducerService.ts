@@ -99,6 +99,7 @@ const anconUpdateMetadata = async (
   oldPayload: any,
   _blockchainTxHash: string,
   _blockchainTokenId: string,
+  _mintBlockNumber: number,
 ) => {
   //user Ancon ethers instance
   const network = await _web3Prov.getNetwork();
@@ -113,6 +114,7 @@ const anconUpdateMetadata = async (
     ...oldPayload,
     blockchainTxHash: _blockchainTxHash,
     blockchainTokenId: _blockchainTokenId,
+    mintBlockNumber: _mintBlockNumber,
   };
 
   // sign the message
@@ -282,6 +284,7 @@ export class DAGReducerService {
           eventContent,
           evt.transactionHash,
           evt.returnValues.tokenId,
+          evt.blockNumber,
         );
 
         const updatedRes = await fetch(
@@ -296,7 +299,10 @@ export class DAGReducerService {
             updatedResJson.content.uuid,
           );
         } else {
-          console.log('[Event Transform Post Failed]', updatedRes.status);
+          console.log(
+            '[Event Mint Metadata Updated Failed]',
+            updatedRes.status,
+          );
         }
 
         if (this.firstTimeTopic) {
