@@ -29,6 +29,16 @@ const rules = {
       topicName: '@mintIndex',
     },
   ],
+  MakeOrder: [
+    {
+      name: 'concatTransactionHash',
+      condition: `returnValues.seller != null`,
+      expression: `assign(dag, append(newData.uuid, newData))`,
+      blockFetchCondition: 'returnValues.uri != null',
+      blockFetchAddress: 'returnValues.creator',
+      topicName: '@mintIndex',
+    },
+  ],
 };
 
 /**
