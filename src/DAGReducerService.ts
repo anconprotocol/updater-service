@@ -214,7 +214,7 @@ export class DAGReducerService {
       this.anconEndpoint,
     );
 
-    // await this.Ancon.initialize();
+    this.Ancon.initialize();
 
     // const indexTopicRes = await fetch(
     //   `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
@@ -229,8 +229,6 @@ export class DAGReducerService {
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async handleAllEvents() {
-    await this.Ancon.initialize();
-
     //Checking if insdex topic exist
     const indexTopicRes = await fetch(
       `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
