@@ -61,11 +61,11 @@ const anconPostMetadata = async (_address, _uuid, _web3Prov, Ancon, _wallet, pay
     };
     return await PostRequest();
 };
-const anconUpdateMetadata = async (_address, _uuid, _web3Prov, Ancon, _wallet, oldPayload, _blockchainTxHash, _blockchainTokenId) => {
+const anconUpdateMetadata = async (_address, _uuid, _web3Prov, Ancon, _wallet, oldPayload, _blockchainTxHash, _blockchainTokenId, _mintBlockNumber) => {
     const network = await _web3Prov.getNetwork();
     const domainNameResponse = `did:ethr:${network.name}:${_address}`;
     console.log('Requesting Ancon metadata creation, awaiting payload signing...');
-    const putPayload = Object.assign(Object.assign({}, oldPayload), { blockchainTxHash: _blockchainTxHash, blockchainTokenId: _blockchainTokenId });
+    const putPayload = Object.assign(Object.assign({}, oldPayload), { blockchainTxHash: _blockchainTxHash, blockchainTokenId: _blockchainTokenId, mintBlockNumber: _mintBlockNumber });
     const signature = await _wallet.signMessage(ethers_1.ethers.utils.arrayify(ethers_1.ethers.utils.toUtf8Bytes(JSON.stringify(putPayload))));
     const requestOptions = {
         method: 'POST',
@@ -136,14 +136,14 @@ let DAGReducerService = DAGReducerService_1 = class DAGReducerService {
                 console.log('[Got one event with uuid: ', uuid, ' Succesfully registered... proceeding to update]\n');
                 const checkMintTopicJson = await checkMintTopic.json();
                 const eventContent = checkMintTopicJson.content;
-                await anconUpdateMetadata(this.wallet.address, uuid, this.Ancon.provider, this.Ancon, this.wallet, eventContent, evt.transactionHash, evt.returnValues.tokenId);
+                await anconUpdateMetadata(this.wallet.address, uuid, this.Ancon.provider, this.Ancon, this.wallet, eventContent, evt.transactionHash, evt.returnValues.tokenId, evt.blockNumber);
                 const updatedRes = await (0, node_fetch_1.default)(`${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${this.wallet.address}`);
                 const updatedResJson = await updatedRes.json();
                 if (updatedRes.status == 200) {
                     console.log('[Event Mint Metadata Succesfully Updated]', updatedResJson.content.uuid);
                 }
                 else {
-                    console.log('[Event Transform Post Failed]', updatedRes.status);
+                    console.log('[Event Mint Metadata Updated Failed]', updatedRes.status);
                 }
                 if (this.firstTimeTopic) {
                     const uriIndexObject = { [uuid]: updatedResJson.content };
