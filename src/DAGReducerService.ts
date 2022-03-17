@@ -7,6 +7,7 @@ import {
   anconUpdateMetadata,
   anconUpdateMetadataMakeOrder,
   anconUpdateMetadataCancelOrder,
+  anconUpdateMetadataClaim,
 } from './utils/DagHelper';
 import Web3 from 'web3';
 import { DAGChainReduxHandler } from './redux';
@@ -38,6 +39,16 @@ const rules = {
     },
   ],
   CancelOrder: [
+    {
+      name: 'concatTransactionHash',
+      condition: `returnValues.uri != null`,
+      expression: `assign(dag, append(newData.uuid, newData))`,
+      blockFetchCondition: 'returnValues.uri != null',
+      blockFetchAddress: 'returnValues.seller',
+      topicName: '@mintIndex',
+    },
+  ],
+  Claim: [
     {
       name: 'concatTransactionHash',
       condition: `returnValues.uri != null`,
@@ -459,6 +470,111 @@ export class DAGReducerService {
             )
           : console.log(
               '(CancelScan)[Event Transform Post Failed]',
+              rawPostRes.contentCid,
+            );
+      }
+    });
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleClaim() {
+    //Checking if index topic exist
+    const indexTopicRes = await fetch(
+      `${this.anconEndpoint}v0/topics?topic=${rules.Claim[0].topicName}&from=${this.wallet.address}`,
+    );
+
+    // console.log(
+    //   '(ClaimScan)[First Time Topic is]',
+    //   this.firstTimeTopic,
+    //   '\n',
+    // );
+
+    //Monitoring the chain
+    const currentBlock = await this.web3.eth.getBlockNumber();
+    const cancelOrderEvents = await this.MarketPlaceContract.getPastEvents(
+      'Claim',
+      {
+        toBlock: currentBlock,
+        fromBlock: currentBlock - 3,
+      },
+    );
+    console.log('\n(ClaimScan)[FROM]', currentBlock - 3, '[TO]', currentBlock);
+    console.log('(ClaimScan)[Events batch lenght]', cancelOrderEvents.length);
+
+    cancelOrderEvents.length != 0
+      ? console.log('(ClaimScan)[Event batch]', cancelOrderEvents, '\n')
+      : null;
+
+    cancelOrderEvents.map(async (evt) => {
+      const uuid = evt.returnValues.uri;
+
+      //Checking the user generated topic without blockchain data
+
+      const checkMintTopic = await fetch(
+        `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${this.wallet.address}`,
+      );
+
+      if (checkMintTopic.status === 200) {
+        console.log(
+          '(ClaimScan)[Got one event with uuid: ',
+          uuid,
+          ' Succesfully registered... proceeding to update]\n',
+        );
+        const checkMintTopicJson = await checkMintTopic.json();
+        const eventContent = checkMintTopicJson.content;
+
+        //Updating the metadata with indexer address generated topic
+        await anconUpdateMetadataClaim(
+          this.wallet.address,
+          uuid,
+          this.Ancon.provider,
+          this.Ancon,
+          this.wallet,
+          eventContent,
+          evt.taker,
+        );
+
+        const updatedRes = await fetch(
+          `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${this.wallet.address}`,
+        );
+
+        const updatedResJson = await updatedRes.json();
+
+        if (updatedRes.status == 200) {
+          console.log(
+            '(ClaimScan)[Event Mint Metadata Succesfully Updated]',
+            updatedResJson.content.uuid,
+          );
+        } else {
+          console.log(
+            '(ClaimScan)[Event Mint Metadata Updated Failed]',
+            updatedRes.status,
+          );
+        }
+
+        const indexTopicJson = await indexTopicRes.json();
+        //ancon update topic list
+        const [result] = await this.dagChainReduxHandler.handleEvent(
+          evt,
+          updatedResJson.content,
+          indexTopicJson.content,
+        );
+
+        const rawPostRes = await anconPostMetadata(
+          this.wallet.address,
+          uuid,
+          this.Ancon.provider,
+          this.Ancon,
+          this.wallet,
+          result,
+        );
+        rawPostRes.contentCid != 'error'
+          ? console.log(
+              '(ClaimScan)[Event Transform Succesfully Posted]',
+              rawPostRes.contentCid,
+            )
+          : console.log(
+              '(ClaimScan)[Event Transform Post Failed]',
               rawPostRes.contentCid,
             );
       }
