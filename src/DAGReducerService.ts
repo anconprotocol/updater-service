@@ -293,16 +293,6 @@ export class DAGReducerService {
     );
 
     this.Ancon.initialize();
-
-    // const indexTopicRes = await fetch(
-    //   `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
-    // );
-    // this.firstTimeTopic = true;
-
-    // if (indexTopicRes.status == 200) {
-    //   this.firstTimeTopic = false;
-    // }
-    // console.log('[First Time Topic is]', this.firstTimeTopic, '\n');
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS)
@@ -317,7 +307,11 @@ export class DAGReducerService {
       this.firstTimeTopic = false;
     }
 
-    console.log('[First Time Topic is]', this.firstTimeTopic, '\n');
+    // console.log(
+    //   '(AddMintInfoScan)[First Time Topic is]',
+    //   this.firstTimeTopic,
+    //   '\n',
+    // );
 
     //Monitoring the chain
     const currentBlock = await this.web3.eth.getBlockNumber();
@@ -325,10 +319,16 @@ export class DAGReducerService {
       toBlock: currentBlock,
       fromBlock: currentBlock - 3,
     });
-    console.log('\n[FROM]', currentBlock - 3, '[TO]', currentBlock);
-    console.log('[Events batch lenght]', allEvents.length);
+    console.log(
+      '\n(AddMintInfoScan)[FROM]',
+      currentBlock - 3,
+      '[TO]',
+      currentBlock,
+    );
+    console.log('(AddMintInfoScan)[Events batch lenght]', allEvents.length);
+
     allEvents.length != 0
-      ? console.log('[Event batch]', allEvents, '\n')
+      ? console.log('(AddMintInfoScan)[Event batch]', allEvents, '\n')
       : null;
 
     allEvents.map(async (evt) => {
@@ -343,7 +343,7 @@ export class DAGReducerService {
 
       if (checkMintTopic.status === 200) {
         console.log(
-          '[Got one event with uuid: ',
+          '(AddMintInfoScan)[Got one event with uuid: ',
           uuid,
           ' Succesfully registered... proceeding to update]\n',
         );
@@ -371,12 +371,12 @@ export class DAGReducerService {
 
         if (updatedRes.status == 200) {
           console.log(
-            '[Event Mint Metadata Succesfully Updated]',
+            '(AddMintInfoScan)[Event Mint Metadata Succesfully Updated]',
             updatedResJson.content.uuid,
           );
         } else {
           console.log(
-            '[Event Mint Metadata Updated Failed]',
+            '(AddMintInfoScan)[Event Mint Metadata Updated Failed]',
             updatedRes.status,
           );
         }
@@ -418,11 +418,11 @@ export class DAGReducerService {
           );
           rawPostRes.contentCid != 'error'
             ? console.log(
-                '[Event Transform Succesfully Posted]',
+                '(AddMintInfoScan)[Event Transform Succesfully Posted]',
                 rawPostRes.contentCid,
               )
             : console.log(
-                '[Event Transform Post Failed]',
+                '(AddMintInfoScan)[Event Transform Post Failed]',
                 rawPostRes.contentCid,
               );
         }
@@ -437,22 +437,31 @@ export class DAGReducerService {
       `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
     );
 
-    console.log('[First Time Topic is]', this.firstTimeTopic, '\n');
+    // console.log(
+    //   '(MakeOrderScan)[First Time Topic is]',
+    //   this.firstTimeTopic,
+    //   '\n',
+    // );
 
     //Monitoring the chain
     const currentBlock = await this.web3.eth.getBlockNumber();
-    const makeOrderEvents = await this.AnconNFTContract.getPastEvents(
+    const makeOrderEvents = await this.MarketPlaceContract.getPastEvents(
       'MakeOrder',
       {
         toBlock: currentBlock,
         fromBlock: currentBlock - 3,
       },
     );
-    console.log('\n[FROM]', currentBlock - 3, '[TO]', currentBlock);
-    console.log('[Events batch lenght]', makeOrderEvents.length);
+    console.log(
+      '\n(MakeOrderScan)[FROM]',
+      currentBlock - 3,
+      '[TO]',
+      currentBlock,
+    );
+    console.log('(MakeOrderScan)[Events batch lenght]', makeOrderEvents.length);
 
     makeOrderEvents.length != 0
-      ? console.log('[Event batch]', makeOrderEvents, '\n')
+      ? console.log('(MakeOrderScan)[Event batch]', makeOrderEvents, '\n')
       : null;
 
     makeOrderEvents.map(async (evt) => {
@@ -467,7 +476,7 @@ export class DAGReducerService {
 
       if (checkMintTopic.status === 200) {
         console.log(
-          '[Got one event with uuid: ',
+          '(MakeOrderScan)[Got one event with uuid: ',
           uuid,
           ' Succesfully registered... proceeding to update]\n',
         );
@@ -496,12 +505,12 @@ export class DAGReducerService {
 
         if (updatedRes.status == 200) {
           console.log(
-            '[Event Mint Metadata Succesfully Updated]',
+            '(MakeOrderScan)[Event Mint Metadata Succesfully Updated]',
             updatedResJson.content.uuid,
           );
         } else {
           console.log(
-            '[Event Mint Metadata Updated Failed]',
+            '(MakeOrderScan)[Event Mint Metadata Updated Failed]',
             updatedRes.status,
           );
         }
@@ -524,10 +533,13 @@ export class DAGReducerService {
         );
         rawPostRes.contentCid != 'error'
           ? console.log(
-              '[Event Transform Succesfully Posted]',
+              '(MakeOrderScan)[Event Transform Succesfully Posted]',
               rawPostRes.contentCid,
             )
-          : console.log('[Event Transform Post Failed]', rawPostRes.contentCid);
+          : console.log(
+              '(MakeOrderScan)[Event Transform Post Failed]',
+              rawPostRes.contentCid,
+            );
       }
     });
   }
