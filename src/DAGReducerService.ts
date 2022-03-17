@@ -32,10 +32,20 @@ const rules = {
   MakeOrder: [
     {
       name: 'concatTransactionHash',
-      condition: `returnValues.seller != null`,
+      condition: `returnValues.uri != null`,
       expression: `assign(dag, append(newData.uuid, newData))`,
       blockFetchCondition: 'returnValues.uri != null',
-      blockFetchAddress: 'returnValues.creator',
+      blockFetchAddress: 'returnValues.seller',
+      topicName: '@mintIndex',
+    },
+  ],
+  CancelOrder: [
+    {
+      name: 'concatTransactionHash',
+      condition: `returnValues.uri != null`,
+      expression: `assign(dag, append(newData.uuid, newData))`,
+      blockFetchCondition: 'returnValues.uri != null',
+      blockFetchAddress: 'returnValues.seller',
       topicName: '@mintIndex',
     },
   ],
