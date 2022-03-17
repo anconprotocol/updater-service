@@ -22,7 +22,6 @@ export const anconPostMetadata = async (
   );
 
   // sign the message
-  //Current error in signature
   const signature = await _wallet.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(payload))),
   );
@@ -88,7 +87,6 @@ export const anconUpdateMetadata = async (
   };
 
   // sign the message
-  //Current error in signature
   const signature = await _wallet.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(putPayload))),
   );
@@ -158,7 +156,6 @@ export const anconUpdateMetadataMakeOrder = async (
   };
 
   // sign the message
-  //Current error in signature
   const signature = await _wallet.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(putPayload))),
   );
@@ -223,7 +220,6 @@ export const anconUpdateMetadataCancelOrder = async (
   };
 
   // sign the message
-  //Current error in signature
   const signature = await _wallet.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(putPayload))),
   );
@@ -290,7 +286,6 @@ export const anconUpdateMetadataClaim = async (
   };
 
   // sign the message
-  //Current error in signature
   const signature = await _wallet.signMessage(
     ethers.utils.arrayify(ethers.utils.toUtf8Bytes(JSON.stringify(putPayload))),
   );
