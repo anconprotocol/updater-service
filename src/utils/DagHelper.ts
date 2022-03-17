@@ -137,6 +137,7 @@ export const anconUpdateMetadataMakeOrder = async (
   _currentOrderHash: string,
   _makeOrderBlockNumber: number,
   _price: number,
+  _timestamp: number,
 ) => {
   //user Ancon ethers instance
   const network = await _web3Prov.getNetwork();
@@ -153,6 +154,7 @@ export const anconUpdateMetadataMakeOrder = async (
     currentOrderHash: _currentOrderHash,
     makeOrderBlockNumber: _makeOrderBlockNumber,
     price: _price,
+    currentOrderTimestamp: _timestamp,
   };
 
   // sign the message

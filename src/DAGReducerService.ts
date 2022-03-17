@@ -311,6 +311,7 @@ export class DAGReducerService {
           evt.returnValues.hash,
           evt.blockNumber,
           evt.price,
+          evt.timestamp,
         );
 
         const updatedRes = await fetch(
