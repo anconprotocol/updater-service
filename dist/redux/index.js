@@ -32,7 +32,6 @@ class DAGChainReduxHandler {
                 return (await jexl.eval(r.blockFetchCondition, evmEvent)) === true;
             });
             output = expectedRules.map(async (r) => {
-                const queryAddress = await jexl.eval(r.blockFetchAddress, evmEvent);
                 const pastDagContent = previousIndexContent;
                 const context = { dag: pastDagContent, newData: topicContent };
                 const result = await jexl.eval(r.expression, context);

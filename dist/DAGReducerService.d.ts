@@ -13,4 +13,5 @@ export declare class DAGReducerService {
     private dagChainReduxHandler;
     constructor();
     handleAllEvents(): Promise<void>;
+    handleMakeOrder(): Promise<void>;
 }
