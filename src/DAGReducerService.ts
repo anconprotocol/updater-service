@@ -1,16 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { BigNumber, ethers, providers } from 'ethers';
+import { ethers } from 'ethers';
 import AnconProtocol, { sleep } from './utils/AnconProtocol';
 import Web3 from 'web3';
-import {
-  arrayify,
-  base64,
-  formatBytes32String,
-  hexlify,
-  keccak256,
-  toUtf8Bytes,
-} from 'ethers/lib/utils';
 import { DAGChainReduxHandler } from './redux';
 import { ConfigService } from '@nestjs/config';
 import helper from './utils/helper';
@@ -342,7 +334,6 @@ export class DAGReducerService {
       : null;
 
     allEvents.map(async (evt) => {
-      let result, rule;
       const uuid = evt.returnValues.uri;
 
       //Checking the user generated topic without blockchain data
@@ -475,7 +466,6 @@ export class DAGReducerService {
       : null;
 
     makeOrderEvents.map(async (evt) => {
-      let result, rule;
       const uuid = evt.returnValues.uri;
 
       //Checking the user generated topic without blockchain data
@@ -584,7 +574,6 @@ export class DAGReducerService {
       : null;
 
     cancelOrderEvents.map(async (evt) => {
-      let result, rule;
       const uuid = evt.returnValues.uri;
 
       //Checking the user generated topic without blockchain data
