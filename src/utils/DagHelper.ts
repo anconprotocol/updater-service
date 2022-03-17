@@ -192,7 +192,7 @@ export const anconUpdateMetadataMakeOrder = async (
 };
 
 /**
-  Post metadata with updated Make Order info
+  Post metadata with updated Cancel Order info
 **/
 export const anconUpdateMetadataCancelOrder = async (
   _address,
