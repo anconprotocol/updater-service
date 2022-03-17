@@ -553,4 +553,113 @@ export class DAGReducerService {
       }
     });
   }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleCancelOrder() {
+    //Checking if index topic exist
+    const indexTopicRes = await fetch(
+      `${this.anconEndpoint}v0/topics?topic=${rules.CancelOrder[0].topicName}&from=${this.wallet.address}`,
+    );
+
+    // console.log(
+    //   '(CancelScan)[First Time Topic is]',
+    //   this.firstTimeTopic,
+    //   '\n',
+    // );
+
+    //Monitoring the chain
+    const currentBlock = await this.web3.eth.getBlockNumber();
+    const cancelOrderEvents = await this.MarketPlaceContract.getPastEvents(
+      'CancelOrder',
+      {
+        toBlock: currentBlock,
+        fromBlock: currentBlock - 3,
+      },
+    );
+    console.log('\n(CancelScan)[FROM]', currentBlock - 3, '[TO]', currentBlock);
+    console.log('(CancelScan)[Events batch lenght]', cancelOrderEvents.length);
+
+    cancelOrderEvents.length != 0
+      ? console.log('(CancelScan)[Event batch]', cancelOrderEvents, '\n')
+      : null;
+
+    cancelOrderEvents.map(async (evt) => {
+      let result, rule;
+      const uuid = evt.returnValues.uri;
+
+      //Checking the user generated topic without blockchain data
+
+      const checkMintTopic = await fetch(
+        `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${this.wallet.address}`,
+      );
+
+      if (checkMintTopic.status === 200) {
+        console.log(
+          '(CancelScan)[Got one event with uuid: ',
+          uuid,
+          ' Succesfully registered... proceeding to update]\n',
+        );
+        const checkMintTopicJson = await checkMintTopic.json();
+        const eventContent = checkMintTopicJson.content;
+
+        //Updating the metadata with indexer address generated topic
+        await anconUpdateMetadataCancelOrder(
+          this.wallet.address,
+          uuid,
+          this.Ancon.provider,
+          this.Ancon,
+          this.wallet,
+          eventContent,
+          evt.transactionHash,
+          evt.returnValues.hash,
+          evt.blockNumber,
+          evt.price,
+        );
+
+        const updatedRes = await fetch(
+          `${this.anconEndpoint}v0/topics?topic=uuid:${uuid}&from=${this.wallet.address}`,
+        );
+
+        const updatedResJson = await updatedRes.json();
+
+        if (updatedRes.status == 200) {
+          console.log(
+            '(CancelScan)[Event Mint Metadata Succesfully Updated]',
+            updatedResJson.content.uuid,
+          );
+        } else {
+          console.log(
+            '(CancelScan)[Event Mint Metadata Updated Failed]',
+            updatedRes.status,
+          );
+        }
+
+        const indexTopicJson = await indexTopicRes.json();
+        //ancon update topic list
+        const [result] = await this.dagChainReduxHandler.handleEvent(
+          evt,
+          updatedResJson.content,
+          indexTopicJson.content,
+        );
+
+        const rawPostRes = await anconPostMetadata(
+          this.wallet.address,
+          uuid,
+          this.Ancon.provider,
+          this.Ancon,
+          this.wallet,
+          result,
+        );
+        rawPostRes.contentCid != 'error'
+          ? console.log(
+              '(CancelScan)[Event Transform Succesfully Posted]',
+              rawPostRes.contentCid,
+            )
+          : console.log(
+              '(CancelScan)[Event Transform Post Failed]',
+              rawPostRes.contentCid,
+            );
+      }
+    });
+  }
 }
