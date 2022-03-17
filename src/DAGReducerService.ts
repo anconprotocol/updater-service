@@ -444,7 +444,7 @@ export class DAGReducerService {
   async handleMakeOrder() {
     //Checking if index topic exist
     const indexTopicRes = await fetch(
-      `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
+      `${this.anconEndpoint}v0/topics?topic=${rules.MakeOrder[0].topicName}&from=${this.wallet.address}`,
     );
 
     // console.log(
