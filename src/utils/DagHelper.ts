@@ -219,6 +219,7 @@ export const anconUpdateMetadataCancelOrder = async (
     currentOrderHash: '',
     makeOrderBlockNumber: '',
     price: '',
+    currentOrderTimestamp: '',
   };
 
   // sign the message
