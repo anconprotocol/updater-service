@@ -23,6 +23,8 @@ export const anconPostMetadata = async (
   //user Ancon ethers instance
   const network = await _web3Prov.getNetwork();
 
+  const uuidIndexTopicName = process.env.REACT_APP_ANCON_UUID_Index_Topic_Name;
+
   const domainNameResponse = `did:ethr:${network.name}:${_address}`;
 
   console.log(
@@ -42,7 +44,7 @@ export const anconPostMetadata = async (
       from: domainNameResponse,
       signature,
       data: payload,
-      topic: `@mintIndex`,
+      topic: `${uuidIndexTopicName}`,
     }),
   };
 

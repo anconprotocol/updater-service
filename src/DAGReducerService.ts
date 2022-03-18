@@ -25,7 +25,7 @@ const rules = {
       expression: `assign(dag, append(newData.uuid, newData))`,
       blockFetchCondition: 'returnValues.uri != null',
       blockFetchAddress: 'returnValues.creator',
-      topicName: '@mintIndex',
+      topicName: '@uuidIndex',
     },
   ],
   MakeOrder: [
@@ -35,7 +35,7 @@ const rules = {
       expression: `assign(dag, append(newData.uuid, newData))`,
       blockFetchCondition: 'returnValues.uri != null',
       blockFetchAddress: 'returnValues.seller',
-      topicName: '@mintIndex',
+      topicName: '@uuidIndex',
     },
   ],
   CancelOrder: [
@@ -45,7 +45,7 @@ const rules = {
       expression: `assign(dag, append(newData.uuid, newData))`,
       blockFetchCondition: 'returnValues.uri != null',
       blockFetchAddress: 'returnValues.seller',
-      topicName: '@mintIndex',
+      topicName: '@uuidIndex',
     },
   ],
   Claim: [
@@ -55,7 +55,7 @@ const rules = {
       expression: `assign(dag, append(newData.uuid, newData))`,
       blockFetchCondition: 'returnValues.uri != null',
       blockFetchAddress: 'returnValues.seller',
-      topicName: '@mintIndex',
+      topicName: '@uuidIndex',
     },
   ],
 };
@@ -81,6 +81,7 @@ export class DAGReducerService {
   private MarketPlaceContract;
   private firstTimeTopic: boolean;
   private dagChainReduxHandler: DAGChainReduxHandler;
+  private uuidIndexTopicName: string;
 
   constructor() {
     const conf = new ConfigService();
@@ -88,6 +89,7 @@ export class DAGReducerService {
     this.anconEndpoint = conf.get('ANCON_URL_TENSTA');
     this.pk = conf.get(`DAG_STORE_KEY`);
     this.url = conf.get('BSC_TESTNET');
+    this.uuidIndexTopicName = conf.get('REACT_APP_ANCON_UUID_Index_Topic_Name');
 
     this.web3 = instanceWeb3WithAccount(this.url, this.pk.split('0x')[1]);
 
@@ -128,7 +130,7 @@ export class DAGReducerService {
   async handleMintEvents() {
     //Checking if insdex topic exist
     const indexTopicRes = await fetch(
-      `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
+      `${this.anconEndpoint}v0/topics?topic=${this.uuidIndexTopicName}&from=${this.wallet.address}`,
     );
     this.firstTimeTopic = true;
 
