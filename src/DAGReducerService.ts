@@ -70,17 +70,17 @@ const instanceWeb3WithAccount = (_url: string, pk: string) => {
 @Injectable()
 export class DAGReducerService {
   private readonly logger = new Logger(DAGReducerService.name);
+  private anconEndpoint: string;
+  private pk: string;
+  private url: string;
+  private web3: Web3;
+  private Ancon: AnconProtocol;
+  private ethWeb3Prov: ethers.providers.Web3Provider;
+  private wallet: ethers.Wallet;
   private AnconNFTContract;
-  private anconEndpoint;
-  private pk;
-  private url;
-  private web3;
-  private Ancon;
-  private ethWeb3Prov;
-  private wallet;
   private MarketPlaceContract;
-  private firstTimeTopic;
-  private dagChainReduxHandler;
+  private firstTimeTopic: boolean;
+  private dagChainReduxHandler: DAGChainReduxHandler;
 
   constructor() {
     const conf = new ConfigService();
