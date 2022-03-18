@@ -338,12 +338,12 @@ export class DAGReducerService {
 
         if (updatedRes.status == 200) {
           console.log(
-            '(MakeOrderScan)[Event Mint Metadata Succesfully Updated]',
+            '(MakeOrderScan)[Event MakeOrder Metadata Succesfully Updated]',
             updatedResJson.content.uuid,
           );
         } else {
           console.log(
-            '(MakeOrderScan)[Event Mint Metadata Updated Failed]',
+            '(MakeOrderScan)[Event MakeOrder Metadata Updated Failed]',
             updatedRes.status,
           );
         }
@@ -442,12 +442,12 @@ export class DAGReducerService {
 
         if (updatedRes.status == 200) {
           console.log(
-            '(CancelScan)[Event Mint Metadata Succesfully Updated]',
+            '(CancelScan)[Event Cancel Order Metadata Succesfully Updated]',
             updatedResJson.content.uuid,
           );
         } else {
           console.log(
-            '(CancelScan)[Event Mint Metadata Updated Failed]',
+            '(CancelScan)[Event Cancel Order Metadata Updated Failed]',
             updatedRes.status,
           );
         }
@@ -547,12 +547,12 @@ export class DAGReducerService {
 
         if (updatedRes.status == 200) {
           console.log(
-            '(ClaimScan)[Event Mint Metadata Succesfully Updated]',
+            '(ClaimScan)[Event Claim Metadata Succesfully Updated]',
             updatedResJson.content.uuid,
           );
         } else {
           console.log(
-            '(ClaimScan)[Event Mint Metadata Updated Failed]',
+            '(ClaimScan)[Event Claim Metadata Updated Failed]',
             updatedRes.status,
           );
         }
