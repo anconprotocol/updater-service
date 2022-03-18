@@ -3,7 +3,15 @@ import AnconProtocol from './AnconProtocol';
 
 /**
   Post topic index list
-**/
+ *
+ * @param _address official indexer's address
+ * @param _uuid the nft uuid
+ * @param _web3Prov instanced Ancon class provider
+ * @param Ancon instanced Ancon class
+ * @param _wallet wallet instance
+ * @param payload content data to be posted
+ * @returns {(Object|Promise)} ancon metadata post response object
+ */
 export const anconPostMetadata = async (
   _address,
   _uuid: string,
@@ -38,7 +46,10 @@ export const anconPostMetadata = async (
     }),
   };
 
-  // UPLOADING the metadata
+  /**
+    Call Ancon class post function
+   * @returns object {cid, ipfs}
+   **/
   const PostRequest = async () => {
     console.log(
       'Requesting Ancon metadata creation, posting Ancon metadata...',
@@ -58,8 +69,19 @@ export const anconPostMetadata = async (
 
 /**
   Post metadata with updated mint info
-**/
-export const anconUpdateMetadata = async (
+ *
+ * @param _address official indexer's address
+ * @param _uuid the nft uuid
+ * @param _web3Prov instanced Ancon class provider
+ * @param Ancon instanced Ancon class
+ * @param _wallet wallet instance
+ * @param oldPayload old content data to be transformed
+ * @param _blockchainTxHash Blockchain mint event transaction hash
+ * @param _blockchainTokenId Contract nft token id
+ * @param _mintBlockNumber Block number in which the AddMintInfoEvent was emitted
+ * @returns {(Object|Promise)} ancon metadata post response object
+ */
+export const anconUpdateMintMetadata = async (
   _address,
   _uuid: string,
   _web3Prov: ethers.providers.Web3Provider,
@@ -122,8 +144,21 @@ export const anconUpdateMetadata = async (
 };
 
 /**
-  Post metadata with updated Make Order info
-**/
+  Post metadata with updated Order info
+ *
+ * @param _address official indexer's address
+ * @param _uuid the nft uuid
+ * @param _web3Prov instanced Ancon class provider
+ * @param Ancon instanced Ancon class
+ * @param _wallet wallet instance
+ * @param oldPayload old content data to be transformed
+ * @param _blockchainMakeOrderTxHash Blockchain 'MakeOrder' event transaction hash
+ * @param _currentOrderHash marketplace contract internal order hash
+ * @param _makeOrderBlockNumber Block number in which the 'MakeOrder' event was emitted
+ * @param _price Nft price
+ * @param _timestamp Block number in which the AddMintInfoEvent was emitted
+ * @returns {(Object|Promise)} ancon metadata post response object
+ */
 export const anconUpdateMetadataMakeOrder = async (
   _address,
   _uuid: string,
@@ -192,7 +227,15 @@ export const anconUpdateMetadataMakeOrder = async (
 
 /**
   Post metadata with updated Cancel Order info
-**/
+ *
+ * @param _address official indexer's address
+ * @param _uuid the nft uuid
+ * @param _web3Prov instanced Ancon class provider
+ * @param Ancon instanced Ancon class
+ * @param _wallet wallet instance
+ * @param oldPayload old content data to be transformed
+ * @returns {(Object|Promise)} ancon metadata post response object
+ */
 export const anconUpdateMetadataCancelOrder = async (
   _address,
   _uuid: string,
@@ -256,7 +299,16 @@ export const anconUpdateMetadataCancelOrder = async (
 
 /**
   Post metadata with updated Claim info
-**/
+ *
+ * @param _address official indexer's address
+ * @param _uuid the nft uuid
+ * @param _web3Prov instanced Ancon class provider
+ * @param Ancon instanced Ancon class
+ * @param _wallet wallet instance
+ * @param oldPayload old content data to be transformed
+ * @param _buyerAddress Address of the buyer used to update the owner
+ * @returns {(Object|Promise)} ancon metadata post response object
+ */
 export const anconUpdateMetadataClaim = async (
   _address,
   _uuid: string,
