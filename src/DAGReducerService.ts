@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import AnconProtocol from './utils/AnconProtocol';
 import {
   anconPostMetadata,
-  anconUpdateMetadata,
+  anconUpdateMintMetadata,
   anconUpdateMetadataMakeOrder,
   anconUpdateMetadataCancelOrder,
   anconUpdateMetadataClaim,
@@ -125,7 +125,7 @@ export class DAGReducerService {
   }
 
   @Cron(CronExpression.EVERY_10_SECONDS)
-  async handleAllEvents() {
+  async handleMintEvents() {
     //Checking if insdex topic exist
     const indexTopicRes = await fetch(
       `${this.anconEndpoint}v0/topics?topic=${rules.AddMintInfo[0].topicName}&from=${this.wallet.address}`,
@@ -144,24 +144,27 @@ export class DAGReducerService {
 
     //Monitoring the chain
     const currentBlock = await this.web3.eth.getBlockNumber();
-    const allEvents = await this.AnconNFTContract.getPastEvents('AddMintInfo', {
-      toBlock: currentBlock,
-      fromBlock: currentBlock - 3,
-    });
+    const mintEvents = await this.AnconNFTContract.getPastEvents(
+      'AddMintInfo',
+      {
+        toBlock: currentBlock,
+        fromBlock: currentBlock - 3,
+      },
+    );
     console.log(
       '\n(AddMintInfoScan)[FROM]',
       currentBlock - 3,
       '[TO]',
       currentBlock,
     );
-    console.log('(AddMintInfoScan)[Events batch lenght]', allEvents.length);
+    console.log('(AddMintInfoScan)[Events batch lenght]', mintEvents.length);
 
-    allEvents.length != 0
-      ? console.log('(AddMintInfoScan)[Event batch]', allEvents, '\n')
+    mintEvents.length != 0
+      ? console.log('(AddMintInfoScan)[Event batch]', mintEvents, '\n')
       : null;
 
-    allEvents.map(async (evt) => {
-      const uuid = evt.returnValues.uri;
+    mintEvents.map(async (evt) => {
+      const uuid: string = evt.returnValues.uri;
 
       //Checking the user generated topic without blockchain data
 
@@ -179,7 +182,7 @@ export class DAGReducerService {
         const eventContent = checkMintTopicJson.content;
 
         //Updating the metadata with indexer address generated topic
-        await anconUpdateMetadata(
+        await anconUpdateMintMetadata(
           this.wallet.address,
           uuid,
           this.Ancon.provider,
