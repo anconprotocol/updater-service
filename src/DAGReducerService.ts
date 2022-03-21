@@ -315,6 +315,9 @@ export class DAGReducerService {
         const checkMintTopicJson = await checkMintTopic.json();
         const eventContent = checkMintTopicJson.content;
 
+        const price = ethers.utils.formatUnits(
+          ethers.BigNumber.from(`${evt.returnValues.price}`),
+        );
         //Updating the metadata with indexer address generated topic
         await anconUpdateMetadataMakeOrder(
           this.wallet.address,
@@ -326,7 +329,7 @@ export class DAGReducerService {
           evt.transactionHash,
           evt.returnValues.hash,
           evt.blockNumber,
-          evt.returnValues.price,
+          parseInt(price),
           evt.returnValues.timestamp,
         );
 
