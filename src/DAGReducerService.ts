@@ -267,7 +267,7 @@ export class DAGReducerService {
   async handleMakeOrder() {
     //Checking if index topic exist
     const indexTopicRes = await fetch(
-      `${this.anconEndpoint}v0/topics?topic=${rules.MakeOrder[0].topicName}&from=${this.wallet.address}`,
+      `${this.anconEndpoint}v0/topics?topic=${this.uuidIndexTopicName}&from=${this.wallet.address}`,
     );
 
     // console.log(
@@ -381,7 +381,7 @@ export class DAGReducerService {
   async handleCancelOrder() {
     //Checking if index topic exist
     const indexTopicRes = await fetch(
-      `${this.anconEndpoint}v0/topics?topic=${rules.CancelOrder[0].topicName}&from=${this.wallet.address}`,
+      `${this.anconEndpoint}v0/topics?topic=${this.uuidIndexTopicName}&from=${this.wallet.address}`,
     );
 
     // console.log(
@@ -485,7 +485,7 @@ export class DAGReducerService {
   async handleClaim() {
     //Checking if index topic exist
     const indexTopicRes = await fetch(
-      `${this.anconEndpoint}v0/topics?topic=${rules.Claim[0].topicName}&from=${this.wallet.address}`,
+      `${this.anconEndpoint}v0/topics?topic=${this.uuidIndexTopicName}&from=${this.wallet.address}`,
     );
 
     // console.log(
