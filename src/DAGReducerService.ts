@@ -326,8 +326,8 @@ export class DAGReducerService {
           evt.transactionHash,
           evt.returnValues.hash,
           evt.blockNumber,
-          evt.price,
-          evt.timestamp,
+          evt.returnValues.price,
+          evt.returnValues.timestamp,
         );
 
         const updatedRes = await fetch(
@@ -536,7 +536,7 @@ export class DAGReducerService {
           this.Ancon,
           this.wallet,
           eventContent,
-          evt.taker,
+          evt.returnValues.taker,
         );
 
         const updatedRes = await fetch(
