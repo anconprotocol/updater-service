@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const schedule_1 = require("@nestjs/schedule");
+const TaskService_1 = require("./TaskService");
 const DAGReducerService_1 = require("./DAGReducerService");
 const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
@@ -19,7 +20,7 @@ AppModule = __decorate([
     (0, common_1.Module)({
         imports: [schedule_1.ScheduleModule.forRoot(), config_1.ConfigModule.forRoot()],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, DAGReducerService_1.DAGReducerService],
+        providers: [app_service_1.AppService, DAGReducerService_1.DAGReducerService, TaskService_1.TasksService],
     })
 ], AppModule);
 exports.AppModule = AppModule;
