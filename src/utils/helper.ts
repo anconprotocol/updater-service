@@ -14,7 +14,7 @@ class helper {
     const web3 = _web3;
     web3.eth.defaultAccount = wallet.address;
     console.log('[default account]', web3.eth.defaultAccount);
-    const anconNFTContractAddress = conf.get(`AnconTestNFTAddress`);
+    const anconNFTContractAddress = conf.get(`AnconNFTAddress`);
     console.log('[anconNFTContractAddress]', anconNFTContractAddress);
     const _anconNFTContract = new web3.eth.Contract(
       AnconNFT.abi as unknown as AbiItem,
@@ -43,7 +43,7 @@ class helper {
           toBlock: lastBlock - sub,
           fromBlock: lastBlock - sub - 4999,
           filter: {
-            token: process.env.REACT_APP_AnconTestNFTAddress,
+            token: process.env.REACT_APP_AnconNFTAddress,
           },
         },
       );

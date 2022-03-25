@@ -49,7 +49,7 @@ var helper = /** @class */ (function () {
         var web3 = _web3;
         web3.eth.defaultAccount = wallet.address;
         console.log('[default account]', web3.eth.defaultAccount);
-        var anconNFTContractAddress = conf.get("AnconTestNFTAddress");
+        var anconNFTContractAddress = conf.get("AnconNFTAddress");
         console.log('[anconNFTContractAddress]', anconNFTContractAddress);
         var _anconNFTContract = new web3.eth.Contract(AnconNFT.abi, anconNFTContractAddress);
         var marketPlaceContractAddress = conf.get("MarketplaceAddress");
@@ -78,7 +78,7 @@ var helper = /** @class */ (function () {
                                 toBlock: lastBlock - sub,
                                 fromBlock: lastBlock - sub - 4999,
                                 filter: {
-                                    token: process.env.REACT_APP_AnconTestNFTAddress
+                                    token: process.env.REACT_APP_AnconNFTAddress
                                 }
                             })];
                     case 3:

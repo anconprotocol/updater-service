@@ -86,7 +86,7 @@ export class DAGReducerService {
   constructor() {
     const conf = new ConfigService();
 
-    this.anconEndpoint = conf.get('ANCON_URL_TENSTA');
+    this.anconEndpoint = conf.get('ANCON_URL');
     this.pk = conf.get(`DAG_STORE_KEY`);
     this.url = conf.get('BSC_TESTNET');
     this.uuidIndexTopicName = conf.get('REACT_APP_ANCON_UUID_Index_Topic_Name');

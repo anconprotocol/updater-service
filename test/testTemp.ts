@@ -84,7 +84,7 @@ const instanceWeb3WithAccount = (_url: string, pk: string) => {
 const main = async () => {
   const conf = new ConfigService();
 
-  const anconEndpoint = conf.get('ANCON_URL_TENSTA');
+  const anconEndpoint = conf.get('ANCON_URL');
   const pk = conf.get(`DAG_STORE_KEY`);
   const url = conf.get('BSC_TESTNET');
 

@@ -115,7 +115,7 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
         switch (_b.label) {
             case 0:
                 conf = new config_1.ConfigService();
-                anconEndpoint = conf.get('ANCON_URL_TENSTA');
+                anconEndpoint = conf.get('ANCON_URL');
                 pk = conf.get("DAG_STORE_KEY");
                 url = conf.get('BSC_TESTNET');
                 web3 = instanceWeb3WithAccount(url, pk.split('0x')[1]);
