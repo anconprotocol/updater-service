@@ -9,6 +9,6 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [ScheduleModule.forRoot(), ConfigModule.forRoot()],
   controllers: [AppController],
-  providers: [AppService, DAGReducerService, TasksService],
+  providers: [AppService, DAGReducerService],
 })
 export class AppModule {}
