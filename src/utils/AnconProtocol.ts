@@ -65,7 +65,7 @@ export default class AnconProtocol {
     );
 
     const encodedDid = await rawDid.json();
-    const content: any = await Object?.values(encodedDid.contentHash)[0];
+    const content: any = await Object.values(encodedDid.contentHash)[0];
     encodedDid.contentHash = content;
     return encodedDid;
   }
@@ -245,7 +245,7 @@ export default class AnconProtocol {
     const rawResponse = await fetch(`${this.anconEndpoint}v0/dagjson/${id}/`);
     const response = await rawResponse.json();
     if (response.error != 'cid too short') {
-      const cid = await Object?.values(response.contentHash)[0];
+      const cid = await Object.values(response.contentHash)[0];
       return {
         cid: cid as string,
         proofKey: response.key as string,
@@ -421,7 +421,7 @@ export default class AnconProtocol {
     );
     const data = await rawData.json();
 
-    data['root'] = await await Object?.values(data.root)[0];
+    data['root'] = await await Object.values(data.root)[0];
     return data;
   }
 
