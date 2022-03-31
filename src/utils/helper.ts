@@ -13,9 +13,9 @@ class helper {
     const wallet = _wallet;
     const web3 = _web3;
     web3.eth.defaultAccount = wallet.address;
-    console.log('[default account]', web3.eth.defaultAccount);
+    // console.log('[default account]', web3.eth.defaultAccount);
     const anconNFTContractAddress = conf.get(`AnconNFTAddress`);
-    console.log('[anconNFTContractAddress]', anconNFTContractAddress);
+    // console.log('[anconNFTContractAddress]', anconNFTContractAddress);
     const _anconNFTContract = new web3.eth.Contract(
       AnconNFT.abi as unknown as AbiItem,
       anconNFTContractAddress,

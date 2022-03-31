@@ -1,0 +1,1 @@
+npx ts-node src/utils/hideItem.ts $1
